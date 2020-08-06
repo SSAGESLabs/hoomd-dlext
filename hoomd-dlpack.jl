@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.2
+# v0.11.3
 
 using Markdown
 using InteractiveUtils
@@ -30,9 +30,6 @@ let
 #end
 
 end
-
-# ╔═╡ baf4053a-d73e-11ea-2758-19426f007406
-
 
 # ╔═╡ 7e8a2346-d675-11ea-1cf7-55043ece8767
 
@@ -377,6 +374,9 @@ cxx"""
 
 #define INVOKE(object, member_ptr) ((object).*(member_ptr))
 
+template <typename T>
+constexpr void maybe_unused(T&&) { }
+
 """
 
 # ╔═╡ f75bcb4c-b81d-11ea-2e14-03d63e294885
@@ -397,78 +397,85 @@ cxx"""
 # ╔═╡ 12f8f5aa-be31-11ea-08c0-2b0b92639304
 cxx"""
 
+using DLManagedTensorPtr = DLManagedTensor*;
+
+using ParticleDataPtr = std::shared_ptr<ParticleData>;
+using SystemDefinitionPtr = std::shared_ptr<SystemDefinition>;
+using ExecutionConfigurationPtr = std::shared_ptr<const ExecutionConfiguration>;
+
 using AccessLocation = access_location::Enum;
+constexpr auto kOnHost = access_location::host;
 #ifdef ENABLE_CUDA
 constexpr auto kOnDevice = access_location::device;
 #endif
-constexpr auto kOnHost = access_location::host;
 
 using AccessMode = access_mode::Enum;
+constexpr auto kRead = access_mode::read;
 constexpr auto kReadWrite = access_mode::readwrite;
+constexpr auto kOverwrite = access_mode::overwrite;
 
-"""
-
-# ╔═╡ c6227b30-d73e-11ea-085f-25891cf667f5
-cxx"""
-
-template <typename T>
-constexpr void maybe_unused(T&&) { }
+constexpr uint8_t kBits = std::is_same<Scalar, float>::value ? 32 : 64;
 
 """
 
 # ╔═╡ 7958e50c-b827-11ea-3281-7b9d16a6fedf
 cxx"""
 
-using ParticleDataPtr = std::shared_ptr<ParticleData>;
-using SystemDefinitionPtr = std::shared_ptr<SystemDefinition>;
-using ExecutionConfigurationPtr = std::shared_ptr<const ExecutionConfiguration>;
-
 class DEFAULT_VISIBILITY SystemView {
 public:
     SystemView(SystemDefinitionPtr sysdef);
-    ParticleDataPtr particles_data() const ;
+    ParticleDataPtr particle_data() const;
     ExecutionConfigurationPtr exec_config() const;
-    bool is_gpu_enabled() const ;
-    uint8_t precision_bits() const;
-    unsigned int particles_number() const;
+    bool is_gpu_enabled() const;
+    unsigned int particle_number() const;
+    int get_device_id(bool gpu_flag) const;
 private:
     SystemDefinitionPtr sysdef;
     ParticleDataPtr pdata;
     ExecutionConfigurationPtr exec_conf;
-    uint8_t bits;
 };
+
+"""
+
+# ╔═╡ 5cedc368-d804-11ea-347c-a351efdc4d38
+cxx"""
 
 SystemView::SystemView(SystemDefinitionPtr sysdef)
     : sysdef { sysdef }
     , pdata { sysdef->getParticleData() }
 {
     exec_conf = pdata->getExecConf();
-    bits = std::is_same<Scalar, float>::value ? 32 : 64;
 }
 
-ParticleDataPtr SystemView::particles_data() const { return pdata; }
+ParticleDataPtr SystemView::particle_data() const { return pdata; }
 ExecutionConfigurationPtr SystemView::exec_config() const { return exec_conf; }
 bool SystemView::is_gpu_enabled() const { return exec_conf->isCUDAEnabled(); }
-uint8_t SystemView::precision_bits() const { return bits; }
-unsigned int SystemView::particles_number() const { return pdata->getN(); }
+unsigned int SystemView::particle_number() const { return pdata->getN(); }
+
+int SystemView::get_device_id(bool gpu_flag) const {
+    maybe_unused(gpu_flag); // prevent compiler warnings when ENABLE_CUDA is not defined
+#ifdef ENABLE_CUDA
+    if (gpu_flag)
+        return exec_conf->getGPUIds()[0];
+#endif
+    return exec_conf->getRank();
+}
 
 """
 
 # ╔═╡ 3a44c2a6-d088-11ea-17d3-37feacc734ca
 cxx"""
 
+template <template <typename> class A, typename T>
+using PropertyGetter = const A<T>& (ParticleData::*)() const;
+
 template <typename T>
-using PropertyGetter = const GlobalArray<T>& (ParticleData::*)() const;
+using ArrayHandlePtr = std::unique_ptr<ArrayHandle<T>>;
 
 """
 
 # ╔═╡ 06d49ad2-bbba-11ea-26dc-73b026f0389a
 cxx"""
-
-using DLManagedTensorPtr = DLManagedTensor*;
-
-template <typename T>
-using ArrayHandlePtr = std::unique_ptr<ArrayHandle<T>>;
 
 template <typename T>
 struct DLDataBridge {
@@ -477,7 +484,9 @@ struct DLDataBridge {
     std::vector<int64_t> strides;
     DLManagedTensor tensor;
 
-    DLDataBridge(ArrayHandlePtr<T>& handle) : handle { std::move(handle) } { }
+    DLDataBridge(ArrayHandlePtr<T>& handle)
+        : handle(std::move(handle))
+    { }
 };
 
 template <typename T>
@@ -490,8 +499,96 @@ void DLDataBridgeDeleter(DLManagedTensorPtr tensor)
         delete static_cast<DLDataBridge<T>*>(tensor->manager_ctx);
 }
 
+"""
+
+# ╔═╡ b120feb8-d802-11ea-1be9-5be8158f0568
+cxx"""
+
 template <typename T>
 void* opaque(T* data) { return static_cast<void*>(data); }
+
+DLContext context(const SystemView& sysview, bool gpu_flag)
+{
+    return DLContext { gpu_flag ? kDLGPU : kDLCPU, sysview.get_device_id(gpu_flag) };
+}
+
+constexpr DLDataType dtype(const DLDataBridgePtr<Scalar4>&)
+{
+    return DLDataType {kDLFloat, kBits, 1};
+}
+constexpr DLDataType dtype(const DLDataBridgePtr<Scalar3>&)
+{
+    return DLDataType {kDLFloat, kBits, 1};
+}
+constexpr DLDataType dtype(const DLDataBridgePtr<Scalar>&)
+{
+    return DLDataType {kDLFloat, kBits, 1};
+}
+constexpr DLDataType dtype(const DLDataBridgePtr<int3>&)
+{
+    return DLDataType {kDLInt, 32, 1};
+}
+constexpr DLDataType dtype(const DLDataBridgePtr<unsigned int>&)
+{
+    return DLDataType {kDLUInt, 32, 1};
+}
+
+constexpr int64_t stride1(const DLDataBridgePtr<Scalar4>&) { return 4; }
+constexpr int64_t stride1(const DLDataBridgePtr<Scalar3>&) { return 3; }
+constexpr int64_t stride1(const DLDataBridgePtr<Scalar>&) { return 1; }
+constexpr int64_t stride1(const DLDataBridgePtr<int3>&) { return 3; }
+constexpr int64_t stride1(const DLDataBridgePtr<unsigned int>&) { return 1; }
+
+"""
+
+# ╔═╡ d0cb9c82-d802-11ea-1845-b17abf41f5e5
+cxx"""
+
+template <template <typename> class A, typename T>
+DLManagedTensorPtr wrap(
+    const SystemView& sysview, PropertyGetter<A, T> getter,
+    AccessLocation requested_location, AccessMode mode,
+    int64_t size2, uint64_t offset = 0
+)
+{
+    assert((size2 >= 1));
+
+    auto location = sysview.is_gpu_enabled() ? requested_location : kOnHost;
+    auto handle = ArrayHandlePtr<T>(
+        new ArrayHandle<T>(INVOKE(*(sysview.particle_data()), getter)(), location, mode)
+    );
+    auto bridge = DLDataBridgePtr<T>(new DLDataBridge<T>(handle));
+
+#ifdef ENABLE_CUDA
+    auto gpu_flag = (location == kOnDevice);
+#else
+    auto gpu_flag = false;
+#endif
+
+    bridge->tensor.manager_ctx = bridge.get();
+    bridge->tensor.deleter = DLDataBridgeDeleter<T>;
+
+    auto& dltensor = bridge->tensor.dl_tensor;
+    dltensor.data = opaque(bridge->handle->data);
+    dltensor.ctx = context(sysview, gpu_flag);
+    dltensor.dtype = dtype(bridge);
+
+    auto& shape = bridge->shape;
+    shape.push_back(sysview.particle_number());
+    if (size2 > 1) shape.push_back(size2);
+
+    auto& strides = bridge->strides;
+    strides.push_back(stride1(bridge));
+    if (size2 > 1) strides.push_back(1);
+
+    dltensor.ndim = shape.size();
+    dltensor.shape = reinterpret_cast<std::int64_t*>(shape.data());
+    dltensor.strides = reinterpret_cast<std::int64_t*>(strides.data());
+    dltensor.byte_offset = offset;
+
+    return &(bridge.release()->tensor);
+}
+
 """
 
 # ╔═╡ 551f5afc-c177-11ea-15e8-47faa6954a5b
@@ -529,6 +626,7 @@ sv = icxx"auto sv = SystemView($sysdef); sv;"
 
 # ╔═╡ 98ef35b8-c127-11ea-3e5d-7b33619f8eaa
 icxx"""
+
 const auto pdata = $sysdef->getParticleData();
 
 {
@@ -540,262 +638,28 @@ const auto pdata = $sysdef->getParticleData();
 }
 
 pdata->getN();
-"""
-
-# ╔═╡ f782f8be-bbbf-11ea-37a4-f9806ed27d55
-cxx"""
-void set(DLContext& ctx, DLDeviceType device_type, int device_id = 0)
-{
-    ctx.device_type = device_type;
-    ctx.device_id = device_id;
-}
-
-void set(DLDataType& dtype, uint8_t code, uint8_t bits, uint16_t lanes)
-{
-    dtype.code = code;
-    dtype.bits = bits;
-    dtype.lanes = lanes;
-}
-"""
-
-# ╔═╡ c054b476-c20c-11ea-3d14-ff8b11518dae
-cxx"""
-
-int64_t stride(const GlobalArray<Scalar4>&) { return 4; }
-int64_t stride(const GlobalArray<Scalar3>&) { return 3; }
-int64_t stride(const GlobalArray<Scalar>&) { return 1; }
 
 """
 
-# ╔═╡ c77020d4-cb75-11ea-0f23-370c21efa1cd
-cxx"""
-int gpu_id(const SystemView& sysview) {
-#ifdef ENABLE_CUDA
-    return sysview.exec_config()->getGPUIds()[0];
-#else
-    return -1;
-#endif
-}
-"""
-
-# ╔═╡ f12fa1fc-cc41-11ea-0f65-8d9e1b01dc35
-icxx"gpu_id($sv);"
-
-# ╔═╡ ff2000e8-cd3d-11ea-0e0d-e37b3841ea42
-cxx"""
-int get_id(const SystemView& sysview, AccessLocation location) {
-    return (location == kOnHost) ? sysview.exec_config()->getRank() : gpu_id(sysview);
-}
-"""
-
-# ╔═╡ a0bec5b6-d5a8-11ea-24b2-eb532695c09e
-cxx"""
-
-constexpr uint8_t kBits = std::is_same<Scalar, float>::value ? 32 : 64;
-
-constexpr uint8_t bits(const DLDataBridgePtr<Scalar4>&) { return kBits; }
-constexpr uint8_t bits(const DLDataBridgePtr<Scalar3>&) { return kBits; }
-constexpr uint8_t bits(const DLDataBridgePtr<Scalar>&) { return kBits; }
-constexpr uint8_t bits(const DLDataBridgePtr<int3>&) { return 32; }
-constexpr uint8_t bits(const DLDataBridgePtr<unsigned int>&) { return 32; }
-
-"""
-
-# ╔═╡ 02074c74-bbde-11ea-336a-f9534a74bd76
-function wrap(
-	sysview,
-    array::cxxt"const GlobalArray<$T>&", #"
-	requested_location::cxxt"AccessLocation",
-    mode::cxxt"AccessMode",
-	dtype_code::cxxt"DLDataTypeCode",
-	ndim, size2, offset
-) where {T}
-    icxx"""
-		auto location = $sysview.is_gpu_enabled() ? $requested_location : kOnHost;
-        auto handle = ArrayHandlePtr<$T>(new ArrayHandle<$T>($array, location, $mode));
-        auto bridge = DLDataBridgePtr<$T>(new DLDataBridge<$T>(handle));
-
-        bridge->tensor.manager_ctx = bridge.get();
-        bridge->tensor.deleter = DLDataBridgeDeleter<$T>;
-
-        auto& dltensor = bridge->tensor.dl_tensor;
-        dltensor.data = opaque(bridge->handle->data);
-
-        auto dev_type = (location == kOnHost) ? kDLCPU : kDLGPU;
-		auto dev_id = (location == kOnHost) ?
-			$sysview.exec_config()->getRank() : gpu_id($sysview);
-
-        set(dltensor.ctx, dev_type, dev_id);
-
-        set(dltensor.dtype, $dtype_code, bits(bridge), 1);
-
-        auto& shape = bridge->shape;
-        auto& strides = bridge->strides;
-
-		shape.push_back($sysview.particles_number());
-		if ($ndim == 2)
-			shape.push_back($size2);
-		
-		strides.push_back(stride($array));
-		if ($ndim == 2)
-        	strides.push_back(1);
-
-        dltensor.ndim = shape.size();
-        dltensor.shape = reinterpret_cast<std::int64_t*>(shape.data());
-        dltensor.strides = reinterpret_cast<std::int64_t*>(strides.data());
-        dltensor.byte_offset = $offset;
-
-        &(bridge.release()->tensor);
-    """
-end
-
-# ╔═╡ a10544dc-be38-11ea-0e42-654b5ac0bf67
-tensor_ptr = wrap(
-    sv, icxx"$sv.particles_data()->getPositions();",
-	icxx"kOnHost;", icxx"kReadWrite;",
-	icxx"kDLFloat;", 2, 3, 0
-)
+# ╔═╡ 9bb0a2f8-d803-11ea-1d9c-410b6abc4239
+tensor_ptr = icxx"wrap($sv, &ParticleData::getPositions, kOnHost, kReadWrite, 3);"
 
 # ╔═╡ 172ab8fa-c211-11ea-03cb-e97701a245cd
 icxx"$tensor_ptr->dl_tensor;"
 
-# ╔═╡ 9d5f6f24-c26b-11ea-09ed-036d30fe3af9
+# ╔═╡ 7a67a59c-d803-11ea-2c0e-4be9e1d9e6ee
 let
     N = Int(icxx"$tensor_ptr->dl_tensor.ndim;")
     ptr = icxx"$tensor_ptr->dl_tensor.shape;"
     unsafe_load(Ptr{NTuple{N,Int64}}(ptr))
 end
 
-# ╔═╡ f984ec80-bfc2-11ea-2da8-a1c9060d33c8
+# ╔═╡ 77985708-d803-11ea-2ad9-dbffeb2c5a38
 let
     N = Int(icxx"$tensor_ptr->dl_tensor.ndim;")
     ptr = icxx"$tensor_ptr->dl_tensor.strides;"
     unsafe_load(Ptr{NTuple{N,Int64}}(ptr))
 end
-
-# ╔═╡ 33ec28fc-d096-11ea-2956-db61fb8d059a
-cxx"""
-
-constexpr int64_t stride(const DLDataBridgePtr<Scalar4>&) { return 4; }
-constexpr int64_t stride(const DLDataBridgePtr<Scalar3>&) { return 3; }
-constexpr int64_t stride(const DLDataBridgePtr<Scalar>&) { return 1; }
-constexpr int64_t stride(const DLDataBridgePtr<int3>&) { return 3; }
-constexpr int64_t stride(const DLDataBridgePtr<unsigned int>&) { return 1; }
-
-"""
-
-# ╔═╡ 407dbe42-d5ed-11ea-3617-136b21c8dcfe
-cxx"""
-
-template <template <typename> class A, typename T>
-using Getter = const A<T>& (ParticleData::*)() const;
-
-"""
-
-# ╔═╡ 87a30418-d66e-11ea-1321-d9721c2d86aa
-cxx"""
-
-constexpr DLDataType dtype(const DLDataBridgePtr<Scalar4>&)
-{
-	return DLDataType {kDLFloat, kBits, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<Scalar3>&)
-{
-	return DLDataType {kDLFloat, kBits, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<Scalar>&)
-{
-	return DLDataType {kDLFloat, kBits, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<int3>&)
-{
-	return DLDataType {kDLInt, 32, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<unsigned int>&)
-{
-	return DLDataType {kDLUInt, 32, 1};
-}
-
-"""
-
-# ╔═╡ dfdfcf90-d690-11ea-0e15-e9045c7eb871
-cxx"""
-
-int get_id(const SystemView& sysview, bool on_host) {
-#ifdef ENABLE_CUDA
-	if !(on_host)
-		return sysview.exec_config()->getGPUIds()[0];
-#endif
-    return sysview.exec_config()->getRank();
-}
-
-"""
-
-# ╔═╡ 6c659e3a-d679-11ea-3576-6b71eccc332d
-cxx"""
-DLContext context(const SystemView& sysview, AccessLocation location) {
-	auto on_host = (location == kOnHost);
-    return DLContext {
-		on_host ? kDLCPU : kDLGPU,
-		get_id(sysview, on_host)
-	};
-}
-"""
-
-# ╔═╡ 97501a52-d094-11ea-0c5e-d7704e08a3f1
-cxx"""
-
-template <template <typename> class A, typename T>
-DLManagedTensorPtr wrap(
-	const SystemView& sysview, Getter<A, T> getter,
-    AccessLocation requested_location, AccessMode mode,
-	int64_t size2, uint64_t offset = 0
-) {
-	auto pdata = sysview.particles_data();
-	auto location = sysview.is_gpu_enabled() ? requested_location : kOnHost;
-    auto handle = ArrayHandlePtr<T>(
-		new ArrayHandle<T>(INVOKE(*pdata, getter)(), location, mode)
-	);
-    auto bridge = DLDataBridgePtr<T>(new DLDataBridge<T>(handle));
-
-    bridge->tensor.manager_ctx = bridge.get();
-    bridge->tensor.deleter = DLDataBridgeDeleter<T>;
-
-	auto& dltensor = bridge->tensor.dl_tensor;
-    dltensor.data = opaque(bridge->handle->data);
-    dltensor.ctx = context(sysview, location);
-    dltensor.dtype = dtype(bridge);
-
-    auto& shape = bridge->shape;
-    auto& strides = bridge->strides;
-
-	shape.push_back(sysview.particles_number());
-	if (size2 > 1)
-		shape.push_back(size2);
-		
-	strides.push_back(stride(bridge));
-	if (size2 > 1)
-        strides.push_back(1);
-
-    dltensor.ndim = shape.size();
-    dltensor.shape = reinterpret_cast<std::int64_t*>(shape.data());
-    dltensor.strides = reinterpret_cast<std::int64_t*>(strides.data());
-    dltensor.byte_offset = offset;
-
-    return &(bridge.release()->tensor);
-}
-
-"""
-
-# ╔═╡ f65b515e-d5ed-11ea-1ee5-0bc27d2ee073
-icxx"""
-
-auto wt = wrap(
-	$sv, &ParticleData::getPositions, kOnHost, kReadWrite, 3
-);
-wt->dl_tensor;
-
-"""
 
 # ╔═╡ 3d3789b4-d676-11ea-1c0f-b7ce9b350ba3
 icxx"""
@@ -806,17 +670,6 @@ auto wt = wrap(
 wt->dl_tensor;
 
 """
-
-# ╔═╡ a7b7b0da-d67a-11ea-0101-d941e02580f1
-let wt = icxx"wrap($sv, &ParticleData::getPositions, kOnHost, kReadWrite, 1, 3);"
-	N = Int(icxx"$wt->dl_tensor.ndim;")
-	shape_ptr = icxx"$wt->dl_tensor.shape;"
-	strides_ptr = icxx"$wt->dl_tensor.strides;"
-	(
-		unsafe_load(Ptr{NTuple{N,Int64}}(shape_ptr)),
-		unsafe_load(Ptr{NTuple{N,Int64}}(strides_ptr)),
-	)
-end
 
 # ╔═╡ ab0dab18-d670-11ea-0237-f3a61249f038
 icxx"""
@@ -870,10 +723,12 @@ wt->dl_tensor;
 # ╠═6705f758-b89e-11ea-3eb3-8f7b6bf933dd
 # ╠═f75bcb4c-b81d-11ea-2e14-03d63e294885
 # ╠═12f8f5aa-be31-11ea-08c0-2b0b92639304
-# ╠═c6227b30-d73e-11ea-085f-25891cf667f5
 # ╠═7958e50c-b827-11ea-3281-7b9d16a6fedf
+# ╠═5cedc368-d804-11ea-347c-a351efdc4d38
 # ╠═3a44c2a6-d088-11ea-17d3-37feacc734ca
 # ╠═06d49ad2-bbba-11ea-26dc-73b026f0389a
+# ╠═b120feb8-d802-11ea-1be9-5be8158f0568
+# ╠═d0cb9c82-d802-11ea-1845-b17abf41f5e5
 # ╠═551f5afc-c177-11ea-15e8-47faa6954a5b
 # ╠═7516d9f4-c17a-11ea-1f2e-a5e6cd5fcec8
 # ╠═3c6df83a-c178-11ea-2e7c-a72eb69916ef
@@ -881,27 +736,11 @@ wt->dl_tensor;
 # ╠═81364030-c125-11ea-0776-a1aedbb2405e
 # ╠═184bd918-bba8-11ea-130b-696c874fabac
 # ╠═98ef35b8-c127-11ea-3e5d-7b33619f8eaa
-# ╠═f782f8be-bbbf-11ea-37a4-f9806ed27d55
-# ╠═baf4053a-d73e-11ea-2758-19426f007406
-# ╠═c054b476-c20c-11ea-3d14-ff8b11518dae
-# ╠═c77020d4-cb75-11ea-0f23-370c21efa1cd
-# ╠═f12fa1fc-cc41-11ea-0f65-8d9e1b01dc35
-# ╠═ff2000e8-cd3d-11ea-0e0d-e37b3841ea42
-# ╠═a0bec5b6-d5a8-11ea-24b2-eb532695c09e
-# ╠═02074c74-bbde-11ea-336a-f9534a74bd76
-# ╠═a10544dc-be38-11ea-0e42-654b5ac0bf67
+# ╠═9bb0a2f8-d803-11ea-1d9c-410b6abc4239
 # ╠═172ab8fa-c211-11ea-03cb-e97701a245cd
-# ╠═9d5f6f24-c26b-11ea-09ed-036d30fe3af9
-# ╠═f984ec80-bfc2-11ea-2da8-a1c9060d33c8
-# ╠═33ec28fc-d096-11ea-2956-db61fb8d059a
-# ╠═407dbe42-d5ed-11ea-3617-136b21c8dcfe
-# ╠═87a30418-d66e-11ea-1321-d9721c2d86aa
-# ╠═dfdfcf90-d690-11ea-0e15-e9045c7eb871
-# ╠═6c659e3a-d679-11ea-3576-6b71eccc332d
-# ╠═97501a52-d094-11ea-0c5e-d7704e08a3f1
-# ╠═f65b515e-d5ed-11ea-1ee5-0bc27d2ee073
+# ╠═7a67a59c-d803-11ea-2c0e-4be9e1d9e6ee
+# ╠═77985708-d803-11ea-2ad9-dbffeb2c5a38
 # ╠═3d3789b4-d676-11ea-1c0f-b7ce9b350ba3
-# ╠═a7b7b0da-d67a-11ea-0101-d941e02580f1
 # ╠═ab0dab18-d670-11ea-0237-f3a61249f038
 # ╠═577c1064-d5e1-11ea-3bb2-b95f5bd84b68
 # ╠═7e8a2346-d675-11ea-1cf7-55043ece8767
