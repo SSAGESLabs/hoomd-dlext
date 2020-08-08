@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.3
+# v0.11.4
 
 using Markdown
 using InteractiveUtils
@@ -466,8 +466,8 @@ int SystemView::get_device_id(bool gpu_flag) const {
 # ╔═╡ 3a44c2a6-d088-11ea-17d3-37feacc734ca
 cxx"""
 
-template <template <typename> class A, typename T>
-using PropertyGetter = const A<T>& (ParticleData::*)() const;
+template <template <typename> class A, typename T, typename Object>
+using PropertyGetter = const A<T>& (Object::*)() const;
 
 template <typename T>
 using ArrayHandlePtr = std::unique_ptr<ArrayHandle<T>>;
@@ -544,9 +544,9 @@ constexpr int64_t stride1(const DLDataBridgePtr<unsigned int>&) { return 1; }
 # ╔═╡ d0cb9c82-d802-11ea-1845-b17abf41f5e5
 cxx"""
 
-template <template <typename> class A, typename T>
+template <template <typename> class A, typename T, typename O>
 DLManagedTensorPtr wrap(
-    const SystemView& sysview, PropertyGetter<A, T> getter,
+    const SystemView& sysview, PropertyGetter<A, T, O> getter,
     AccessLocation requested_location, AccessMode mode,
     int64_t size2, uint64_t offset = 0
 )
@@ -671,25 +671,46 @@ wt->dl_tensor;
 
 """
 
+# ╔═╡ 0c9a16e0-d80c-11ea-02f5-ff140e777156
+cxx"""
+
+DLManagedTensorPtr positions(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getPositions, location, mode, 3);
+}
+
+DLManagedTensorPtr types(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getPositions, location, mode, 1, 3);
+}
+
+"""
+
 # ╔═╡ ab0dab18-d670-11ea-0237-f3a61249f038
+
 icxx"""
-/*
+
 auto wt = wrap(
 	$sv, &ParticleData::getImages, kOnHost, kReadWrite, 3
 );
 wt->dl_tensor;
-*/
+
 """
 
+
 # ╔═╡ 577c1064-d5e1-11ea-3bb2-b95f5bd84b68
+
 icxx"""
-/*
+
 auto wt = wrap(
 	$sv, &ParticleData::getBodies, kOnHost, kReadWrite, 1
 );
 wt->dl_tensor;
-*/
+
 """
+
 
 # ╔═╡ Cell order:
 # ╠═73d58072-d5cf-11ea-126e-871bc236d094
@@ -741,6 +762,7 @@ wt->dl_tensor;
 # ╠═7a67a59c-d803-11ea-2c0e-4be9e1d9e6ee
 # ╠═77985708-d803-11ea-2ad9-dbffeb2c5a38
 # ╠═3d3789b4-d676-11ea-1c0f-b7ce9b350ba3
+# ╠═0c9a16e0-d80c-11ea-02f5-ff140e777156
 # ╠═ab0dab18-d670-11ea-0237-f3a61249f038
 # ╠═577c1064-d5e1-11ea-3bb2-b95f5bd84b68
 # ╠═7e8a2346-d675-11ea-1cf7-55043ece8767
