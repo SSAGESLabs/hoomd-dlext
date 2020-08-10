@@ -665,7 +665,7 @@ end
 icxx"""
 
 auto wt = wrap(
-	$sv, &ParticleData::getPositions, kOnHost, kReadWrite, 1, 3
+    $sv, &ParticleData::getPositions, kOnHost, kReadWrite, 1, 3
 );
 wt->dl_tensor;
 
@@ -693,7 +693,7 @@ DLManagedTensorPtr types(
 icxx"""
 
 auto wt = wrap(
-	$sv, &ParticleData::getImages, kOnHost, kReadWrite, 3
+    $sv, &ParticleData::getImages, kOnHost, kReadWrite, 3
 );
 wt->dl_tensor;
 
@@ -705,7 +705,7 @@ wt->dl_tensor;
 icxx"""
 
 auto wt = wrap(
-	$sv, &ParticleData::getBodies, kOnHost, kReadWrite, 1
+    $sv, &ParticleData::getBodies, kOnHost, kReadWrite, 1
 );
 wt->dl_tensor;
 
