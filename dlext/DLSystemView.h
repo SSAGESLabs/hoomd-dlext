@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// This file is part of `HOOMD-dlpack`, see LICENSE.md
+// This file is part of `hoomd-dlext`, see LICENSE.md
 
 #ifndef DL_SYSTEM_VIEW_H_
 #define DL_SYSTEM_VIEW_H_
@@ -17,7 +17,7 @@
 #include "utils.h"
 
 
-namespace dlsv
+namespace dlext
 {
 
 

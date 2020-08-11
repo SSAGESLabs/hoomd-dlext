@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// This file is part of `PySAGES`, see LICENSE.md
+// This file is part of `hoomd-dlext`, see LICENSE.md
 
 #pragma once
 

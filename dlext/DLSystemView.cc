@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-// This file is part of `HOOMD-dlpack`, see LICENSE.md
+// This file is part of `hoomd-dlext`, see LICENSE.md
 
 #include "DLSystemView.h"
 
 
-using namespace dlsv
+using namespace dlext
 using namespace utils
 
 
@@ -28,6 +28,7 @@ int SystemView::get_device_id(bool gpu_flag) const {
 #endif
     return exec_conf->getRank();
 }
+
 
 DLManagedTensorPtr positions(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
