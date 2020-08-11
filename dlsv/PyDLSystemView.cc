@@ -7,7 +7,7 @@
 using namespace dlsv
 
 
-PYBIND11_MODULE(dlpack, m) {
+PYBIND11_MODULE(dlsv, m) {
     export_SystemView(m, "SystemView");
 
     m.def("positions", &positions);
