@@ -6,10 +6,7 @@ set(
     PyDLSystemView.cc
 )
 
-pybind11_add_module(
-    _${COMPONENT_NAME} SHARED
-    ${_${COMPONENT_NAME}_sources} ${_CUDA_GENERATED_FILES} NO_EXTRAS
-)
+pybind11_add_module(_${COMPONENT_NAME} SHARED ${_${COMPONENT_NAME}_sources} NO_EXTRAS)
 
 if(APPLE)
     set_target_properties(
