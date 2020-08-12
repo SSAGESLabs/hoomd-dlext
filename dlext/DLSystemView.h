@@ -8,13 +8,12 @@
 #include <type_traits>
 #include <vector>
 
-#include "dlpack/dlpack.h"
+#include "dlpack.h"
+#include "utils.h"
 
 #include "hoomd/ExecutionConfiguration.h"
 #include "hoomd/GlobalArray.h"
 #include "hoomd/SystemDefinition.h"
-
-#include "utils.h"
 
 
 namespace dlext
