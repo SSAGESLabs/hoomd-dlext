@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
-#ifndef DL_SYSTEM_VIEW_H_
-#define DL_SYSTEM_VIEW_H_
+#ifndef DLPACK_EXTENSION_H_
+#define DLPACK_EXTENSION_H_
 
 #include <memory>
 #include <type_traits>
@@ -86,7 +86,7 @@ void DLDataBridgeDeleter(DLManagedTensorPtr tensor)
 template <typename T>
 void* opaque(T* data) { return static_cast<void*>(data); }
 
-DLContext context(const SystemView& sysview, bool gpu_flag)
+inline DLContext context(const SystemView& sysview, bool gpu_flag)
 {
     return DLContext { gpu_flag ? kDLGPU : kDLCPU, sysview.get_device_id(gpu_flag) };
 }
@@ -180,7 +180,7 @@ DLManagedTensorPtr net_torques(const SystemView&, AccessLocation, AccessMode);
 DLManagedTensorPtr net_virial(const SystemView&, AccessLocation, AccessMode);
 
 
-} // namespace dlsv
+} // namespace dlext
 
 
-#endif // DL_SYSTEM_VIEW_H_
+#endif // DLPACK_EXTENSION_H_

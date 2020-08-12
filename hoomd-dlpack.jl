@@ -548,7 +548,7 @@ template <template <typename> class A, typename T, typename O>
 DLManagedTensorPtr wrap(
     const SystemView& sysview, PropertyGetter<A, T, O> getter,
     AccessLocation requested_location, AccessMode mode,
-    int64_t size2, uint64_t offset = 0
+    int64_t size2 = 1, uint64_t offset = 0, uint64_t stride1_offset = 0
 )
 {
     assert((size2 >= 1));
@@ -578,7 +578,7 @@ DLManagedTensorPtr wrap(
     if (size2 > 1) shape.push_back(size2);
 
     auto& strides = bridge->strides;
-    strides.push_back(stride1(bridge));
+    strides.push_back(stride1(bridge) + stride1_offset);
     if (size2 > 1) strides.push_back(1);
 
     dltensor.ndim = shape.size();
@@ -671,7 +671,7 @@ wt->dl_tensor;
 
 """
 
-# ╔═╡ 0c9a16e0-d80c-11ea-02f5-ff140e777156
+# ╔═╡ eaddaa8c-dc50-11ea-0403-c1c7f3c0194d
 cxx"""
 
 DLManagedTensorPtr positions(
@@ -679,38 +679,76 @@ DLManagedTensorPtr positions(
 ) {
     return wrap(sysview, &ParticleData::getPositions, location, mode, 3);
 }
-
 DLManagedTensorPtr types(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
     return wrap(sysview, &ParticleData::getPositions, location, mode, 1, 3);
 }
+DLManagedTensorPtr velocities(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getVelocities, location, mode, 3);
+}
+DLManagedTensorPtr masses(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getVelocities, location, mode, 1, 3);
+}
+DLManagedTensorPtr orientations(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getOrientationArray, location, mode, 4);
+}
+DLManagedTensorPtr angular_momenta(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getAngularMomentumArray, location, mode, 4);
+}
+DLManagedTensorPtr moments_of_intertia(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getMomentsOfInertiaArray, location, mode, 3);
+}
+DLManagedTensorPtr charges(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getCharges, location, mode, 1);
+}
+DLManagedTensorPtr diameters(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getDiameters, location, mode, 1);
+}
+DLManagedTensorPtr images(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getImages, location, mode, 3);
+}
+DLManagedTensorPtr tags(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getTags, location, mode, 1);
+}
+DLManagedTensorPtr net_forces(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getNetForce, location, mode, 4);
+}
+DLManagedTensorPtr net_torques(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getNetTorqueArray, location, mode, 4);
+}
+DLManagedTensorPtr net_virial(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getNetVirial, location, mode, 6, 0, 5);
+}
 
 """
 
-# ╔═╡ ab0dab18-d670-11ea-0237-f3a61249f038
-
-icxx"""
-
-auto wt = wrap(
-    $sv, &ParticleData::getImages, kOnHost, kReadWrite, 3
-);
-wt->dl_tensor;
-
-"""
-
-
-# ╔═╡ 577c1064-d5e1-11ea-3bb2-b95f5bd84b68
-
-icxx"""
-
-auto wt = wrap(
-    $sv, &ParticleData::getBodies, kOnHost, kReadWrite, 1
-);
-wt->dl_tensor;
-
-"""
-
+# ╔═╡ 7dd89158-dc51-11ea-29cf-5f31bd492b58
+icxx"images($sv, kOnHost, kReadWrite)->dl_tensor;"
 
 # ╔═╡ Cell order:
 # ╠═73d58072-d5cf-11ea-126e-871bc236d094
@@ -762,7 +800,6 @@ wt->dl_tensor;
 # ╠═7a67a59c-d803-11ea-2c0e-4be9e1d9e6ee
 # ╠═77985708-d803-11ea-2ad9-dbffeb2c5a38
 # ╠═3d3789b4-d676-11ea-1c0f-b7ce9b350ba3
-# ╠═0c9a16e0-d80c-11ea-02f5-ff140e777156
-# ╠═ab0dab18-d670-11ea-0237-f3a61249f038
-# ╠═577c1064-d5e1-11ea-3bb2-b95f5bd84b68
+# ╠═eaddaa8c-dc50-11ea-0403-c1c7f3c0194d
+# ╠═7dd89158-dc51-11ea-29cf-5f31bd492b58
 # ╠═7e8a2346-d675-11ea-1cf7-55043ece8767
