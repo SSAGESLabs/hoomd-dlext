@@ -163,20 +163,76 @@ DLManagedTensorPtr wrap(
     return &(bridge.release()->tensor);
 }
 
-DLManagedTensorPtr positions(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr types(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr velocities(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr masses(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr orientations(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr angular_momenta(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr moments_of_intertia(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr charges(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr diameters(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr images(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr tags(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr net_forces(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr net_torques(const SystemView&, AccessLocation, AccessMode);
-DLManagedTensorPtr net_virial(const SystemView&, AccessLocation, AccessMode);
+inline DLManagedTensorPtr positions(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getPositions, location, mode, 3);
+}
+inline DLManagedTensorPtr types(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getPositions, location, mode, 1, 3);
+}
+inline DLManagedTensorPtr velocities(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getVelocities, location, mode, 3);
+}
+inline DLManagedTensorPtr masses(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getVelocities, location, mode, 1, 3);
+}
+inline DLManagedTensorPtr orientations(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getOrientationArray, location, mode, 4);
+}
+inline DLManagedTensorPtr angular_momenta(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getAngularMomentumArray, location, mode, 4);
+}
+inline DLManagedTensorPtr moments_of_intertia(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getMomentsOfInertiaArray, location, mode, 3);
+}
+inline DLManagedTensorPtr charges(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getCharges, location, mode, 1);
+}
+inline DLManagedTensorPtr diameters(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getDiameters, location, mode, 1);
+}
+inline DLManagedTensorPtr images(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getImages, location, mode, 3);
+}
+inline DLManagedTensorPtr tags(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getTags, location, mode, 1);
+}
+inline DLManagedTensorPtr net_forces(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getNetForce, location, mode, 4);
+}
+inline DLManagedTensorPtr net_torques(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getNetTorqueArray, location, mode, 4);
+}
+inline DLManagedTensorPtr net_virial(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getNetVirial, location, mode, 6, 0, 5);
+}
 
 
 } // namespace dlext

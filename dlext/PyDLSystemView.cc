@@ -25,16 +25,16 @@ PYBIND11_MODULE(dlpack_extension, m)
     export_SystemView(m);
 
     py::enum_<AccessLocation>(m, "AccessLocation")
-        .value("ON_HOST", kOnHost)
+        .value("OnHost", kOnHost)
 #ifdef ENABLE_CUDA
-        .value("ON_DEVICE", kOnDevice)
+        .value("OnDevice", kOnDevice)
 #endif
     ;
 
     py::enum_<AccessMode>(m, "AccessMode")
-        .value("READ", kRead)
-        .value("READ_WRITE", kReadWrite)
-        .value("OVERWRITE", kOverwrite)
+        .value("Read", kRead)
+        .value("ReadWrite", kReadWrite)
+        .value("Overwrite", kOverwrite)
     ;
 
     m.def("positions",
