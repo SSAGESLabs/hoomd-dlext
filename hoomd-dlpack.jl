@@ -31,7 +31,13 @@ let
 
 end
 
-# ╔═╡ 7e8a2346-d675-11ea-1cf7-55043ece8767
+# ╔═╡ 7dd89158-dc51-11ea-29cf-5f31bd492b58
+# icxx"images($sv, kOnHost, kReadWrite)->dl_tensor;"
+
+# ╔═╡ ad018ea0-dc86-11ea-07a9-79c0bc4ca049
+
+
+# ╔═╡ a432deb0-dc8a-11ea-271b-2d8bdd833382
 
 
 # ╔═╡ 73d58072-d5cf-11ea-126e-871bc236d094
@@ -747,8 +753,58 @@ DLManagedTensorPtr net_virial(
 
 """
 
-# ╔═╡ 7dd89158-dc51-11ea-29cf-5f31bd492b58
-icxx"images($sv, kOnHost, kReadWrite)->dl_tensor;"
+# ╔═╡ ef8cca58-dc7e-11ea-1717-a37dc388e35e
+dlext = pyimport("hoomd.dlext.dlpack_extension");
+
+# ╔═╡ 078ce3a4-dc7f-11ea-233c-39db0a00ff2c
+sysview = dlext.SystemView(system.sysdef)
+
+# ╔═╡ 8ebde02a-dc80-11ea-18da-f374633f0043
+dlpos_ptr = let capsule = pycall(
+		dlext.positions, PyObject,
+		sysview, dlext.AccessLocation.ON_HOST, dlext.AccessMode.READ_WRITE
+	)
+	PyCall.@pycheck ccall(
+        (@pysym :PyCapsule_SetDestructor),
+        Cint, (PyPtr, Ptr{Cvoid}),
+        capsule, C_NULL
+    )
+    dlptr = PyCall.@pycheck ccall(
+        (@pysym :PyCapsule_GetPointer),
+        Ptr{Cvoid}, (PyPtr, Ptr{UInt8}),
+        capsule, ccall((@pysym :PyCapsule_GetName), Ptr{UInt8}, (PyPtr,), capsule)
+    )
+end
+
+# ╔═╡ 277ad1e8-dc80-11ea-01e6-6f87ea9739e5
+icxx"static_cast<DLManagedTensorPtr>($dlpos_ptr)->dl_tensor;"
+
+# ╔═╡ 941fb454-dc7f-11ea-313d-179bec258aee
+icxx"static_cast<Scalar4*>(static_cast<DLManagedTensorPtr>($dlpos_ptr)->dl_tensor.data)[5];"
+
+# ╔═╡ 7d3c1860-dc87-11ea-043b-5f01dcd00e3c
+config = pyimport("jax.config").config
+
+# ╔═╡ 9b4ad67a-dc87-11ea-38cb-518edd5fceb6
+config.update("jax_enable_x64", true)
+
+# ╔═╡ 015bebac-dc83-11ea-15bf-310d49c79c58
+jax = pyimport("jax")
+
+# ╔═╡ 1db3e570-dc83-11ea-2235-4d94fcfeef0d
+dlpack = pyimport("jax.dlpack")
+
+# ╔═╡ 7e8a2346-d675-11ea-1cf7-55043ece8767
+xla_bridge = dlpack.xla_bridge
+
+# ╔═╡ 363a3d60-dc83-11ea-1db5-65bb735502c0
+darray = dlpack.from_dlpack(pycall(
+	dlext.positions, PyObject,
+	sysview, dlext.AccessLocation.ON_HOST, dlext.AccessMode.READ_WRITE
+), xla_bridge.get_backend("cpu"))
+
+# ╔═╡ 485d3998-dc88-11ea-047d-3d4a29abedce
+positions
 
 # ╔═╡ Cell order:
 # ╠═73d58072-d5cf-11ea-126e-871bc236d094
@@ -802,4 +858,17 @@ icxx"images($sv, kOnHost, kReadWrite)->dl_tensor;"
 # ╠═3d3789b4-d676-11ea-1c0f-b7ce9b350ba3
 # ╠═eaddaa8c-dc50-11ea-0403-c1c7f3c0194d
 # ╠═7dd89158-dc51-11ea-29cf-5f31bd492b58
+# ╠═ef8cca58-dc7e-11ea-1717-a37dc388e35e
+# ╠═078ce3a4-dc7f-11ea-233c-39db0a00ff2c
+# ╠═8ebde02a-dc80-11ea-18da-f374633f0043
+# ╠═277ad1e8-dc80-11ea-01e6-6f87ea9739e5
+# ╠═941fb454-dc7f-11ea-313d-179bec258aee
+# ╠═7d3c1860-dc87-11ea-043b-5f01dcd00e3c
+# ╠═9b4ad67a-dc87-11ea-38cb-518edd5fceb6
+# ╠═015bebac-dc83-11ea-15bf-310d49c79c58
+# ╠═1db3e570-dc83-11ea-2235-4d94fcfeef0d
 # ╠═7e8a2346-d675-11ea-1cf7-55043ece8767
+# ╠═363a3d60-dc83-11ea-1db5-65bb735502c0
+# ╠═485d3998-dc88-11ea-047d-3d4a29abedce
+# ╠═ad018ea0-dc86-11ea-07a9-79c0bc4ca049
+# ╠═a432deb0-dc8a-11ea-271b-2d8bdd833382
