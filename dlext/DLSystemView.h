@@ -163,25 +163,15 @@ DLManagedTensorPtr wrap(
     return &(bridge.release()->tensor);
 }
 
-inline DLManagedTensorPtr positions(
+inline DLManagedTensorPtr positions_types(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
-    return wrap(sysview, &ParticleData::getPositions, location, mode, 3);
+    return wrap(sysview, &ParticleData::getPositions, location, mode, 4);
 }
-inline DLManagedTensorPtr types(
+inline DLManagedTensorPtr velocities_masses(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
-    return wrap(sysview, &ParticleData::getPositions, location, mode, 1, 3);
-}
-inline DLManagedTensorPtr velocities(
-    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-) {
-    return wrap(sysview, &ParticleData::getVelocities, location, mode, 3);
-}
-inline DLManagedTensorPtr masses(
-    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-) {
-    return wrap(sysview, &ParticleData::getVelocities, location, mode, 1, 3);
+    return wrap(sysview, &ParticleData::getVelocities, location, mode, 4);
 }
 inline DLManagedTensorPtr orientations(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
@@ -201,12 +191,12 @@ inline DLManagedTensorPtr moments_of_intertia(
 inline DLManagedTensorPtr charges(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
-    return wrap(sysview, &ParticleData::getCharges, location, mode, 1);
+    return wrap(sysview, &ParticleData::getCharges, location, mode);
 }
 inline DLManagedTensorPtr diameters(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
-    return wrap(sysview, &ParticleData::getDiameters, location, mode, 1);
+    return wrap(sysview, &ParticleData::getDiameters, location, mode);
 }
 inline DLManagedTensorPtr images(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
@@ -216,7 +206,7 @@ inline DLManagedTensorPtr images(
 inline DLManagedTensorPtr tags(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
-    return wrap(sysview, &ParticleData::getTags, location, mode, 1);
+    return wrap(sysview, &ParticleData::getTags, location, mode);
 }
 inline DLManagedTensorPtr net_forces(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
@@ -231,7 +221,7 @@ inline DLManagedTensorPtr net_torques(
 inline DLManagedTensorPtr net_virial(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
-    return wrap(sysview, &ParticleData::getNetVirial, location, mode, 6, 0, 5);
+    return wrap(sysview, &ParticleData::getNetVirial, location, mode, 6);
 }
 
 

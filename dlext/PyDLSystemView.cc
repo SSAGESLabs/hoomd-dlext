@@ -37,74 +37,16 @@ PYBIND11_MODULE(dlpack_extension, m)
         .value("Overwrite", kOverwrite)
     ;
 
-    m.def("positions",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(positions(sysview, location, mode));
-        }
-    );
-    m.def("types",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(types(sysview, location, mode));
-        }
-    );
-    m.def("velocities",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(velocities(sysview, location, mode));
-        }
-    );
-    m.def("masses",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(masses(sysview, location, mode));
-        }
-    );
-    m.def("orientations",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(orientations(sysview, location, mode));
-        }
-    );
-    m.def("angular_momenta",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(angular_momenta(sysview, location, mode));
-        }
-    );
-    m.def("moments_of_intertia",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(moments_of_intertia(sysview, location, mode));
-        }
-    );
-    m.def("charges",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(charges(sysview, location, mode));
-        }
-    );
-    m.def("diameters",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(diameters(sysview, location, mode));
-        }
-    );
-    m.def("images",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(images(sysview, location, mode));
-        }
-    );
-    m.def("tags",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(tags(sysview, location, mode));
-        }
-    );
-    m.def("net_forces",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(net_forces(sysview, location, mode));
-        }
-    );
-    m.def("net_torques",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(net_torques(sysview, location, mode));
-        }
-    );
-    m.def("net_virial",
-        [](const SystemView& sysview, AccessLocation location, AccessMode mode) {
-            return encapsulate(net_virial(sysview, location, mode));
-        }
-    );
+    m.def("positions_types", encapsulate<&positions_types>);
+    m.def("velocities_masses", encapsulate<&velocities_masses>);
+    m.def("orientations", encapsulate<&orientations>);
+    m.def("angular_momenta", encapsulate<&angular_momenta>);
+    m.def("moments_of_intertia", encapsulate<&moments_of_intertia>);
+    m.def("charges", encapsulate<&charges>);
+    m.def("diameters", encapsulate<&diameters>);
+    m.def("images", encapsulate<&images>);
+    m.def("tags", encapsulate<&tags>);
+    m.def("net_forces", encapsulate<&net_forces>);
+    m.def("net_torques", encapsulate<&net_torques>);
+    m.def("net_virial", encapsulate<&net_virial>);
 }

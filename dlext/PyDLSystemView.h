@@ -16,15 +16,22 @@ namespace dlext
 
 namespace py = pybind11;
 
+using PropertyExtractor =
+    DLManagedTensorPtr (*)(const SystemView&, AccessLocation, AccessMode)
+;
+
 const char* const kDLTensorCapsuleName = "dltensor";
 
 
-inline py::capsule encapsulate(DLManagedTensorPtr dl_managed_tensor)
-{
+template <PropertyExtractor property>
+inline py::capsule encapsulate(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    auto dl_managed_tensor = property(sysview, location, mode);
     return py::capsule(
         dl_managed_tensor, kDLTensorCapsuleName,
         [](PyObject* obj) { // PyCapsule_Destructor
-            DLManagedTensorPtr dlmt = static_cast<DLManagedTensorPtr>(
+            auto dlmt = static_cast<DLManagedTensorPtr>(
                 PyCapsule_GetPointer(obj, kDLTensorCapsuleName)
             );
             if (dlmt && dlmt->deleter) {
