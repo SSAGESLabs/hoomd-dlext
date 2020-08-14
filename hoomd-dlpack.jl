@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.4
+# v0.11.5
 
 using Markdown
 using InteractiveUtils
@@ -34,7 +34,7 @@ end
 # ╔═╡ 7dd89158-dc51-11ea-29cf-5f31bd492b58
 # icxx"images($sv, kOnHost, kReadWrite)->dl_tensor;"
 
-# ╔═╡ ad018ea0-dc86-11ea-07a9-79c0bc4ca049
+# ╔═╡ d60a754a-dd9a-11ea-3e60-73cb9a6300dd
 
 
 # ╔═╡ a432deb0-dc8a-11ea-271b-2d8bdd833382
@@ -761,8 +761,8 @@ sysview = dlext.SystemView(system.sysdef)
 
 # ╔═╡ 8ebde02a-dc80-11ea-18da-f374633f0043
 dlpos_ptr = let capsule = pycall(
-		dlext.positions, PyObject,
-		sysview, dlext.AccessLocation.ON_HOST, dlext.AccessMode.READ_WRITE
+		dlext.positions_types, PyObject,
+		sysview, dlext.AccessLocation.OnHost, dlext.AccessMode.ReadWrite
 	)
 	PyCall.@pycheck ccall(
         (@pysym :PyCapsule_SetDestructor),
@@ -780,7 +780,10 @@ end
 icxx"static_cast<DLManagedTensorPtr>($dlpos_ptr)->dl_tensor;"
 
 # ╔═╡ 941fb454-dc7f-11ea-313d-179bec258aee
-icxx"static_cast<Scalar4*>(static_cast<DLManagedTensorPtr>($dlpos_ptr)->dl_tensor.data)[5];"
+icxx"static_cast<Scalar4*>(static_cast<DLManagedTensorPtr>($dlpos_ptr)->dl_tensor.data)[0];"
+
+# ╔═╡ 149a24c8-dd95-11ea-14cf-5dd82c6930f1
+icxx"static_cast<DLManagedTensorPtr>($dlpos_ptr)->dl_tensor.shape[0];"
 
 # ╔═╡ 7d3c1860-dc87-11ea-043b-5f01dcd00e3c
 config = pyimport("jax.config").config
@@ -799,9 +802,44 @@ xla_bridge = dlpack.xla_bridge
 
 # ╔═╡ 363a3d60-dc83-11ea-1db5-65bb735502c0
 darray = dlpack.from_dlpack(pycall(
-	dlext.positions, PyObject,
-	sysview, dlext.AccessLocation.ON_HOST, dlext.AccessMode.READ_WRITE
+	dlext.positions_types, PyObject,
+	sysview, dlext.AccessLocation.OnHost, dlext.AccessMode.ReadWrite
 ), xla_bridge.get_backend("cpu"))
+
+# ╔═╡ 0ddefdfa-dd97-11ea-2e00-978aa19b84e3
+numpy = pyimport("numpy")
+
+# ╔═╡ 29b46c40-dd97-11ea-3041-8d62bcb400e1
+nparray = numpy.asarray(darray)
+
+# ╔═╡ ec937896-ddc4-11ea-2d0b-8d0cb88d70bd
+jlarray = let
+	pybuf = PyBuffer(
+		nparray, PyCall.PyBUF_FORMAT | PyCall.PyBUF_ND | PyCall.PyBUF_STRIDES
+	)
+	_, native_byteorder = PyCall.array_format(pybuf)
+	sz = size(pybuf)
+    strd = strides(pybuf)
+    length(strd) == 0 && (sz = ())
+    N = length(sz)
+    isreadonly = false
+	info = PyArray_Info{Float64,2}(
+		native_byteorder, sz, strd, pybuf.buf.buf, isreadonly, pybuf
+	)
+	PyArray{Float64,2}(nparray, info)
+end
+
+# ╔═╡ f8b15352-dde5-11ea-17f6-a916d563eaae
+tmp = jlarray[1, 1]
+
+# ╔═╡ 03d89af6-dde6-11ea-2ca0-1f4506f5b8ac
+jlarray[1, 1] = tmp
+
+# ╔═╡ 180f34ba-dde6-11ea-2371-23628eb209c0
+view(jlarray, :, 1:3)
+
+# ╔═╡ 0872e890-dde7-11ea-2002-e57a95d20394
+reinterpret(Int64, view(jlarray, :, 4))
 
 # ╔═╡ 485d3998-dc88-11ea-047d-3d4a29abedce
 positions
@@ -863,12 +901,20 @@ positions
 # ╠═8ebde02a-dc80-11ea-18da-f374633f0043
 # ╠═277ad1e8-dc80-11ea-01e6-6f87ea9739e5
 # ╠═941fb454-dc7f-11ea-313d-179bec258aee
+# ╠═149a24c8-dd95-11ea-14cf-5dd82c6930f1
 # ╠═7d3c1860-dc87-11ea-043b-5f01dcd00e3c
 # ╠═9b4ad67a-dc87-11ea-38cb-518edd5fceb6
 # ╠═015bebac-dc83-11ea-15bf-310d49c79c58
 # ╠═1db3e570-dc83-11ea-2235-4d94fcfeef0d
 # ╠═7e8a2346-d675-11ea-1cf7-55043ece8767
 # ╠═363a3d60-dc83-11ea-1db5-65bb735502c0
+# ╠═0ddefdfa-dd97-11ea-2e00-978aa19b84e3
+# ╠═29b46c40-dd97-11ea-3041-8d62bcb400e1
+# ╠═ec937896-ddc4-11ea-2d0b-8d0cb88d70bd
+# ╠═f8b15352-dde5-11ea-17f6-a916d563eaae
+# ╠═03d89af6-dde6-11ea-2ca0-1f4506f5b8ac
+# ╠═180f34ba-dde6-11ea-2371-23628eb209c0
+# ╠═0872e890-dde7-11ea-2002-e57a95d20394
+# ╠═d60a754a-dd9a-11ea-3e60-73cb9a6300dd
 # ╠═485d3998-dc88-11ea-047d-3d4a29abedce
-# ╠═ad018ea0-dc86-11ea-07a9-79c0bc4ca049
 # ╠═a432deb0-dc8a-11ea-271b-2d8bdd833382
