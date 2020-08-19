@@ -12,7 +12,7 @@ namespace py = pybind11;
 void export_SystemView(py::module& m)
 {
     py::class_<SystemView, std::shared_ptr<SystemView>>(m, "SystemView")
-        .def(py::init<SystemDefinitionPtr>())
+        .def(py::init<SystemDefinitionSPtr>())
         .def("particle_data", &SystemView::particle_data)
         .def("is_gpu_enabled", &SystemView::is_gpu_enabled)
         .def("particle_number", &SystemView::particle_number)

@@ -24,15 +24,13 @@ namespace utils
 template <typename T>
 constexpr void maybe_unused(T&&) { }
 
-/*
-template<typename F, typename T>
-void flatten_iterate(F f, const std::vector< std::vector<T> >& outter) {
-    for (const auto& inner : outter) {
-        for (const auto& value : inner) {
-            f(value);
-        }
-    }
-}
-*/
+//template<typename F, typename T>
+//void flatten_iterate(F f, const std::vector< std::vector<T> >& outter) {
+//    for (const auto& inner : outter) {
+//        for (const auto& value : inner) {
+//            f(value);
+//        }
+//    }
+//}
 
 }

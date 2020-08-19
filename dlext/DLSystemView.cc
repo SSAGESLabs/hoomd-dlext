@@ -8,15 +8,15 @@ using namespace dlext;
 using namespace utils;
 
 
-SystemView::SystemView(SystemDefinitionPtr sysdef)
+SystemView::SystemView(SystemDefinitionSPtr sysdef)
     : sysdef { sysdef }
     , pdata { sysdef->getParticleData() }
 {
     exec_conf = pdata->getExecConf();
 }
 
-ParticleDataPtr SystemView::particle_data() const { return pdata; }
-ExecutionConfigurationPtr SystemView::exec_config() const { return exec_conf; }
+ParticleDataSPtr SystemView::particle_data() const { return pdata; }
+ExecutionConfigurationSPtr SystemView::exec_config() const { return exec_conf; }
 bool SystemView::is_gpu_enabled() const { return exec_conf->isCUDAEnabled(); }
 unsigned int SystemView::particle_number() const { return pdata->getN(); }
 
