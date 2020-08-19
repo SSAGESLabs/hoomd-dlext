@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.11.6
+# v0.11.7
 
 using Markdown
 using InteractiveUtils
@@ -799,11 +799,8 @@ darray = dlpack.from_dlpack(pycall(
 	sysview, dlext.AccessLocation.OnHost, dlext.AccessMode.ReadWrite
 ), xla_bridge.get_backend("cpu"))
 
-# ╔═╡ 0ddefdfa-dd97-11ea-2e00-978aa19b84e3
-numpy = pyimport("numpy")
-
 # ╔═╡ 29b46c40-dd97-11ea-3041-8d62bcb400e1
-nparray = numpy.asarray(darray)
+nparray = np.asarray(darray)
 
 # ╔═╡ ec937896-ddc4-11ea-2d0b-8d0cb88d70bd
 jlarray = let
@@ -907,7 +904,6 @@ positions
 # ╠═1db3e570-dc83-11ea-2235-4d94fcfeef0d
 # ╠═7e8a2346-d675-11ea-1cf7-55043ece8767
 # ╠═363a3d60-dc83-11ea-1db5-65bb735502c0
-# ╠═0ddefdfa-dd97-11ea-2e00-978aa19b84e3
 # ╠═29b46c40-dd97-11ea-3041-8d62bcb400e1
 # ╠═ec937896-ddc4-11ea-2d0b-8d0cb88d70bd
 # ╠═f8b15352-dde5-11ea-17f6-a916d563eaae
