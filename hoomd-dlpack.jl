@@ -1,44 +1,8 @@
 ### A Pluto.jl notebook ###
-# v0.11.5
+# v0.11.6
 
 using Markdown
 using InteractiveUtils
-
-# ╔═╡ 7516d9f4-c17a-11ea-1f2e-a5e6cd5fcec8
-#=
-"""
-inline unsigned int getRTag(unsigned int tag) const
-            {
-            assert(tag < m_rtag.size());
-            ArrayHandle< unsigned int> h_rtag(m_rtag,access_location::host, access_mode::read);
-            unsigned int idx = h_rtag.data[tag];
-#ifdef ENABLE_MPI
-            assert(m_decomposition || idx < getN());
-#endif
-            assert(idx < getN() + getNGhosts() || idx == NOT_LOCAL);
-            return idx;
-            }
-"""
-=#
-
-# ╔═╡ e962cf94-baf3-11ea-2c12-cf52180a8452
-let
-
-#function Base.convert(::Type{cxxt"$T"}, po::PyObject) where {T}
-#    ptr = pcpp"PyObject"(Ptr{Cvoid}(PyPtr(po)))
-#    return icxx"pybind11::handle($ptr).cast<$T>();"
-#end
-
-end
-
-# ╔═╡ 7dd89158-dc51-11ea-29cf-5f31bd492b58
-# icxx"images($sv, kOnHost, kReadWrite)->dl_tensor;"
-
-# ╔═╡ d60a754a-dd9a-11ea-3e60-73cb9a6300dd
-
-
-# ╔═╡ a432deb0-dc8a-11ea-271b-2d8bdd833382
-
 
 # ╔═╡ 73d58072-d5cf-11ea-126e-871bc236d094
 using Distributed
@@ -405,9 +369,9 @@ cxx"""
 
 using DLManagedTensorPtr = DLManagedTensor*;
 
-using ParticleDataPtr = std::shared_ptr<ParticleData>;
-using SystemDefinitionPtr = std::shared_ptr<SystemDefinition>;
-using ExecutionConfigurationPtr = std::shared_ptr<const ExecutionConfiguration>;
+using ParticleDataSPtr = std::shared_ptr<ParticleData>;
+using SystemDefinitionSPtr = std::shared_ptr<SystemDefinition>;
+using ExecutionConfigurationSPtr = std::shared_ptr<const ExecutionConfiguration>;
 
 using AccessLocation = access_location::Enum;
 constexpr auto kOnHost = access_location::host;
@@ -429,16 +393,16 @@ cxx"""
 
 class DEFAULT_VISIBILITY SystemView {
 public:
-    SystemView(SystemDefinitionPtr sysdef);
-    ParticleDataPtr particle_data() const;
-    ExecutionConfigurationPtr exec_config() const;
+    SystemView(SystemDefinitionSPtr sysdef);
+    ParticleDataSPtr particle_data() const;
+    ExecutionConfigurationSPtr exec_config() const;
     bool is_gpu_enabled() const;
     unsigned int particle_number() const;
     int get_device_id(bool gpu_flag) const;
 private:
-    SystemDefinitionPtr sysdef;
-    ParticleDataPtr pdata;
-    ExecutionConfigurationPtr exec_conf;
+    SystemDefinitionSPtr sysdef;
+    ParticleDataSPtr pdata;
+    ExecutionConfigurationSPtr exec_conf;
 };
 
 """
@@ -446,15 +410,15 @@ private:
 # ╔═╡ 5cedc368-d804-11ea-347c-a351efdc4d38
 cxx"""
 
-SystemView::SystemView(SystemDefinitionPtr sysdef)
+SystemView::SystemView(SystemDefinitionSPtr sysdef)
     : sysdef { sysdef }
     , pdata { sysdef->getParticleData() }
 {
     exec_conf = pdata->getExecConf();
 }
 
-ParticleDataPtr SystemView::particle_data() const { return pdata; }
-ExecutionConfigurationPtr SystemView::exec_config() const { return exec_conf; }
+ParticleDataSPtr SystemView::particle_data() const { return pdata; }
+ExecutionConfigurationSPtr SystemView::exec_config() const { return exec_conf; }
 bool SystemView::is_gpu_enabled() const { return exec_conf->isCUDAEnabled(); }
 unsigned int SystemView::particle_number() const { return pdata->getN(); }
 
@@ -476,7 +440,7 @@ template <template <typename> class A, typename T, typename Object>
 using PropertyGetter = const A<T>& (Object::*)() const;
 
 template <typename T>
-using ArrayHandlePtr = std::unique_ptr<ArrayHandle<T>>;
+using ArrayHandleUPtr = std::unique_ptr<ArrayHandle<T>>;
 
 """
 
@@ -485,18 +449,18 @@ cxx"""
 
 template <typename T>
 struct DLDataBridge {
-    ArrayHandlePtr<T> handle;
+    ArrayHandleUPtr<T> handle;
     std::vector<int64_t> shape;
     std::vector<int64_t> strides;
     DLManagedTensor tensor;
 
-    DLDataBridge(ArrayHandlePtr<T>& handle)
+    DLDataBridge(ArrayHandleUPtr<T>& handle)
         : handle(std::move(handle))
     { }
 };
 
 template <typename T>
-using DLDataBridgePtr = std::unique_ptr<DLDataBridge<T>>;
+using DLDataBridgeUPtr = std::unique_ptr<DLDataBridge<T>>;
 
 template <typename T>
 void DLDataBridgeDeleter(DLManagedTensorPtr tensor)
@@ -511,39 +475,38 @@ void DLDataBridgeDeleter(DLManagedTensorPtr tensor)
 cxx"""
 
 template <typename T>
-void* opaque(T* data) { return static_cast<void*>(data); }
+inline void* opaque(T* data) { return static_cast<void*>(data); }
 
-DLContext context(const SystemView& sysview, bool gpu_flag)
+inline DLContext context(const SystemView& sysview, bool gpu_flag)
 {
     return DLContext { gpu_flag ? kDLGPU : kDLCPU, sysview.get_device_id(gpu_flag) };
 }
 
-constexpr DLDataType dtype(const DLDataBridgePtr<Scalar4>&)
-{
-    return DLDataType {kDLFloat, kBits, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<Scalar3>&)
-{
-    return DLDataType {kDLFloat, kBits, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<Scalar>&)
-{
-    return DLDataType {kDLFloat, kBits, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<int3>&)
-{
-    return DLDataType {kDLInt, 32, 1};
-}
-constexpr DLDataType dtype(const DLDataBridgePtr<unsigned int>&)
-{
-    return DLDataType {kDLUInt, 32, 1};
-}
+template <typename>
+constexpr DLDataType dtype();
+template <>
+constexpr DLDataType dtype<Scalar4>() { return DLDataType {kDLFloat, kBits, 1}; }
+template <>
+constexpr DLDataType dtype<Scalar3>() { return DLDataType {kDLFloat, kBits, 1}; }
+template <>
+constexpr DLDataType dtype<Scalar>() { return DLDataType {kDLFloat, kBits, 1}; }
+template <>
+constexpr DLDataType dtype<int3>() { return DLDataType {kDLInt, 32, 1}; }
+template <>
+constexpr DLDataType dtype<unsigned int>() { return DLDataType {kDLUInt, 32, 1}; }
 
-constexpr int64_t stride1(const DLDataBridgePtr<Scalar4>&) { return 4; }
-constexpr int64_t stride1(const DLDataBridgePtr<Scalar3>&) { return 3; }
-constexpr int64_t stride1(const DLDataBridgePtr<Scalar>&) { return 1; }
-constexpr int64_t stride1(const DLDataBridgePtr<int3>&) { return 3; }
-constexpr int64_t stride1(const DLDataBridgePtr<unsigned int>&) { return 1; }
+template <typename>
+constexpr int64_t stride1();
+template <>
+constexpr int64_t stride1<Scalar4>() { return 4; }
+template <>
+constexpr int64_t stride1<Scalar3>() { return 3; }
+template <>
+constexpr int64_t stride1<Scalar>() { return 1; }
+template <>
+constexpr int64_t stride1<int3>() { return 3; }
+template <>
+constexpr int64_t stride1<unsigned int>() { return 1; }
 
 """
 
@@ -560,10 +523,10 @@ DLManagedTensorPtr wrap(
     assert((size2 >= 1));
 
     auto location = sysview.is_gpu_enabled() ? requested_location : kOnHost;
-    auto handle = ArrayHandlePtr<T>(
+    auto handle = ArrayHandleUPtr<T>(
         new ArrayHandle<T>(INVOKE(*(sysview.particle_data()), getter)(), location, mode)
     );
-    auto bridge = DLDataBridgePtr<T>(new DLDataBridge<T>(handle));
+    auto bridge = DLDataBridgeUPtr<T>(new DLDataBridge<T>(handle));
 
 #ifdef ENABLE_CUDA
     auto gpu_flag = (location == kOnDevice);
@@ -577,14 +540,14 @@ DLManagedTensorPtr wrap(
     auto& dltensor = bridge->tensor.dl_tensor;
     dltensor.data = opaque(bridge->handle->data);
     dltensor.ctx = context(sysview, gpu_flag);
-    dltensor.dtype = dtype(bridge);
+    dltensor.dtype = dtype<T>();
 
     auto& shape = bridge->shape;
     shape.push_back(sysview.particle_number());
     if (size2 > 1) shape.push_back(size2);
 
     auto& strides = bridge->strides;
-    strides.push_back(stride1(bridge) + stride1_offset);
+    strides.push_back(stride1<T>() + stride1_offset);
     if (size2 > 1) strides.push_back(1);
 
     dltensor.ndim = shape.size();
@@ -606,14 +569,41 @@ let
     """
 end
 
+# ╔═╡ 7516d9f4-c17a-11ea-1f2e-a5e6cd5fcec8
+#=
+"""
+inline unsigned int getRTag(unsigned int tag) const
+            {
+            assert(tag < m_rtag.size());
+            ArrayHandle< unsigned int> h_rtag(m_rtag,access_location::host, access_mode::read);
+            unsigned int idx = h_rtag.data[tag];
+#ifdef ENABLE_MPI
+            assert(m_decomposition || idx < getN());
+#endif
+            assert(idx < getN() + getNGhosts() || idx == NOT_LOCAL);
+            return idx;
+            }
+"""
+=#
+
 # ╔═╡ 3c6df83a-c178-11ea-2e7c-a72eb69916ef
 let
     ptr = pcpp"PyObject"(Ptr{Cvoid}(PyPtr(pdata)))
     icxx"""
         auto h = pybind11::handle {$ptr};
-        auto pdata = h.cast<ParticleDataPtr>();
+        auto pdata = h.cast<ParticleDataSPtr>();
         pdata->getPosition(0);
     """
+end
+
+# ╔═╡ e962cf94-baf3-11ea-2c12-cf52180a8452
+let
+
+#function Base.convert(::Type{cxxt"$T"}, po::PyObject) where {T}
+#    ptr = pcpp"PyObject"(Ptr{Cvoid}(PyPtr(po)))
+#    return icxx"pybind11::handle($ptr).cast<$T>();"
+#end
+
 end
 
 # ╔═╡ 81364030-c125-11ea-0776-a1aedbb2405e
@@ -621,11 +611,11 @@ sysdef = let
     ptr = pcpp"PyObject"(Ptr{Cvoid}(PyPtr(system.sysdef)))
     icxx"""
         auto h = pybind11::handle($ptr);
-        h.cast<SystemDefinitionPtr>();
+        h.cast<SystemDefinitionSPtr>();
     """
 end
 
-#sysdef = convert(cxxt"SystemDefinitionPtr", system.sysdef)
+#sysdef = convert(cxxt"SystemDefinitionSPtr", system.sysdef)
 
 # ╔═╡ 184bd918-bba8-11ea-130b-696c874fabac
 sv = icxx"auto sv = SystemView($sysdef); sv;"
@@ -753,6 +743,9 @@ DLManagedTensorPtr net_virial(
 
 """
 
+# ╔═╡ 7dd89158-dc51-11ea-29cf-5f31bd492b58
+# icxx"images($sv, kOnHost, kReadWrite)->dl_tensor;"
+
 # ╔═╡ ef8cca58-dc7e-11ea-1717-a37dc388e35e
 dlext = pyimport("hoomd.dlext.dlpack_extension");
 
@@ -841,8 +834,14 @@ view(jlarray, :, 1:3)
 # ╔═╡ 0872e890-dde7-11ea-2002-e57a95d20394
 reinterpret(Int64, view(jlarray, :, 4))
 
+# ╔═╡ d60a754a-dd9a-11ea-3e60-73cb9a6300dd
+
+
 # ╔═╡ 485d3998-dc88-11ea-047d-3d4a29abedce
 positions
+
+# ╔═╡ a432deb0-dc8a-11ea-271b-2d8bdd833382
+
 
 # ╔═╡ Cell order:
 # ╠═73d58072-d5cf-11ea-126e-871bc236d094
