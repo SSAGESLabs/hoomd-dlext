@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
-#pragma once
+#ifndef PY_HOOMD_DLPACK_EXTENSION_H_
+#define PY_HOOMD_DLPACK_EXTENSION_H_
 
-#include "DLSystemView.h"
 
-#ifndef NVCC
+#include "DLExt.h"
+
 #include "hoomd/extern/pybind/include/pybind11/pybind11.h"
-#endif
 
 
 namespace dlext
 {
 
-
+using namespace sysview;
 namespace py = pybind11;
 
 using PropertyExtractor =
@@ -30,7 +30,7 @@ inline py::capsule encapsulate(
     auto dl_managed_tensor = property(sysview, location, mode);
     return py::capsule(
         dl_managed_tensor, kDLTensorCapsuleName,
-        [](PyObject* obj) { // PyCapsule_Destructor
+        [](PyObject* obj) {  // PyCapsule_Destructor
             auto dlmt = static_cast<DLManagedTensorPtr>(
                 PyCapsule_GetPointer(obj, kDLTensorCapsuleName)
             );
@@ -45,3 +45,6 @@ inline py::capsule encapsulate(
 
 
 } // namespace dlext
+
+
+#endif // PY_HOOMD_DLPACK_EXTENSION_H_

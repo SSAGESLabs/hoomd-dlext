@@ -455,7 +455,7 @@ struct DLDataBridge {
     DLManagedTensor tensor;
 
     DLDataBridge(ArrayHandleUPtr<T>& handle)
-        : handle(std::move(handle))
+        : handle {std::move(handle)}
     { }
 };
 

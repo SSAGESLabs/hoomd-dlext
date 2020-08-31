@@ -1,30 +1,22 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
-#ifndef DLPACK_EXTENSION_H_
-#define DLPACK_EXTENSION_H_
+#ifndef HOOMD_DLPACK_EXTENSION_H_
+#define HOOMD_DLPACK_EXTENSION_H_
 
-#include <memory>
-#include <type_traits>
 #include <vector>
 
+#include "SystemView.h"
 #include "dlpack.h"
-#include "utils.h"
-
-#include "hoomd/ExecutionConfiguration.h"
-#include "hoomd/GlobalArray.h"
-#include "hoomd/SystemDefinition.h"
 
 
 namespace dlext
 {
 
 
-using DLManagedTensorPtr = DLManagedTensor*;
+using namespace sysview;
 
-using ParticleDataSPtr = std::shared_ptr<ParticleData>;
-using SystemDefinitionSPtr = std::shared_ptr<SystemDefinition>;
-using ExecutionConfigurationSPtr = std::shared_ptr<const ExecutionConfiguration>;
+using DLManagedTensorPtr = DLManagedTensor*;
 
 using AccessLocation = access_location::Enum;
 const auto kOnHost = access_location::host;
@@ -38,21 +30,6 @@ const auto kReadWrite = access_mode::readwrite;
 const auto kOverwrite = access_mode::overwrite;
 
 constexpr uint8_t kBits = std::is_same<Scalar, float>::value ? 32 : 64;
-
-
-class DEFAULT_VISIBILITY SystemView {
-public:
-    SystemView(SystemDefinitionSPtr sysdef);
-    ParticleDataSPtr particle_data() const;
-    ExecutionConfigurationSPtr exec_config() const;
-    bool is_gpu_enabled() const;
-    unsigned int particle_number() const;
-    int get_device_id(bool gpu_flag) const;
-private:
-    SystemDefinitionSPtr sysdef;
-    ParticleDataSPtr pdata;
-    ExecutionConfigurationSPtr exec_conf;
-};
 
 template <template <typename> class Array, typename T, typename Object>
 using PropertyGetter = const Array<T>& (Object::*)() const;
@@ -68,7 +45,7 @@ struct DLDataBridge {
     DLManagedTensor tensor;
 
     DLDataBridge(ArrayHandleUPtr<T>& handle)
-        : handle(std::move(handle))
+        : handle { std::move(handle) }
     { }
 };
 
@@ -238,4 +215,4 @@ inline DLManagedTensorPtr net_virial(
 } // namespace dlext
 
 
-#endif // DLPACK_EXTENSION_H_
+#endif // HOOMD_DLPACK_EXTENSION_H_

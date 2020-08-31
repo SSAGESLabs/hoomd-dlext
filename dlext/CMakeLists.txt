@@ -2,8 +2,8 @@ set(COMPONENT_NAME dlpack_extension)
 
 set(
     ${COMPONENT_NAME}_sources
-    DLSystemView.cc
-    PyDLSystemView.cc
+    DLExt.cc
+    PyDLExt.cc
 )
 
 pybind11_add_module(${COMPONENT_NAME} SHARED ${${COMPONENT_NAME}_sources} NO_EXTRAS)

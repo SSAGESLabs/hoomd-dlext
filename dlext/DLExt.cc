@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
-#include "DLSystemView.h"
+#include "DLExt.h"
 
 
 using namespace dlext;

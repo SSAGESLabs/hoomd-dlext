@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
-#include "PyDLSystemView.h"
+#include "PyDLExt.h"
+#include "PyHalfStepHook.h"
 
 
+using namespace sysview;
 using namespace dlext;
-
 namespace py = pybind11;
 
 
@@ -20,10 +21,21 @@ void export_SystemView(py::module& m)
     ;
 }
 
+void export_PyHalfStepHook(py::module m)
+{
+    using HalfStepHookSPtr = std::shared_ptr<HalfStepHook>;
+
+    py::class_<HalfStepHook, PyHalfStepHook, HalfStepHookSPtr>(m, "HalfStepHook")
+        .def(py::init<>())
+        .def("setSystemDefinition", &HalfStepHook::setSystemDefinition)
+        .def("update", &HalfStepHook::update)
+    ;
+}
+
+
 PYBIND11_MODULE(dlpack_extension, m)
 {
-    export_SystemView(m);
-
+    // Enums
     py::enum_<AccessLocation>(m, "AccessLocation")
         .value("OnHost", kOnHost)
 #ifdef ENABLE_CUDA
@@ -37,6 +49,11 @@ PYBIND11_MODULE(dlpack_extension, m)
         .value("Overwrite", kOverwrite)
     ;
 
+    // Classes
+    export_SystemView(m);
+    export_PyHalfStepHook(m);
+
+    // Methods
     m.def("positions_types", encapsulate<&positions_types>);
     m.def("velocities_masses", encapsulate<&velocities_masses>);
     m.def("orientations", encapsulate<&orientations>);
