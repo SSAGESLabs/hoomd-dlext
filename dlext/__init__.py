@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2020: Pablo Zubieta
+# This file is part of `hoomd-dlext`, see LICENSE.md
 
 
 from .dlpack_extension import *
