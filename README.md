@@ -1,4 +1,4 @@
-# HOOMD-DLPack
+# HOOMD-dlext
 
 Provide access to [HOOMD-blue](https://glotzerlab.engin.umich.edu/hoomd-blue) simulation data on CPU or GPU through [DLPack](https://github.com/dmlc/dlpack)
 
