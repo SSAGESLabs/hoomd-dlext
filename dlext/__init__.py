@@ -37,14 +37,16 @@ def view(context):
 
 
 class Hook(HalfStepHook):
-    def initialize_from(self, sampler):
-        initialize, updater = sampler
+    def initialize_from(self, sampler, bias):
+        initialize, update = sampler
         self.state = initialize()
-        self.update_from = updater
+        self.update_from = update
+        self.bias = bias
         return None
     #
     def update(self, timestep):
         self.state = self.update_from(self.state, timestep)
+        self.bias(self.state)
         return None
 
 
