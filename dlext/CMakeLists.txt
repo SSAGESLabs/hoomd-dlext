@@ -2,7 +2,7 @@ set(COMPONENT_NAME dlpack_extension)
 
 set(
     ${COMPONENT_NAME}_sources
-    DLExt.cc
+    SystemView.cc
     PyDLExt.cc
 )
 

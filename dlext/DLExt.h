@@ -80,6 +80,19 @@ constexpr DLDataType dtype<int3>() { return DLDataType {kDLInt, 32, 1}; }
 template <>
 constexpr DLDataType dtype<unsigned int>() { return DLDataType {kDLUInt, 32, 1}; }
 
+template <template <typename> class>
+unsigned int particle_number(const SystemView& sysview);
+template <>
+inline unsigned int particle_number<GlobalArray>(const SystemView& sysview)
+{
+    return sysview.local_particle_number();
+}
+template <>
+inline unsigned int particle_number<GlobalVector>(const SystemView& sysview)
+{
+    return sysview.global_particle_number();
+}
+
 template <typename>
 constexpr int64_t stride1();
 template <>
@@ -122,7 +135,7 @@ DLManagedTensorPtr wrap(
     dltensor.dtype = dtype<T>();
 
     auto& shape = bridge->shape;
-    shape.push_back(sysview.particle_number());
+    shape.push_back(particle_number<A>(sysview));
     if (size2 > 1)
         shape.push_back(size2);
 
@@ -191,6 +204,12 @@ inline DLManagedTensorPtr tags(
     const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
 ) {
     return wrap(sysview, &ParticleData::getTags, location, mode);
+}
+
+inline DLManagedTensorPtr rtags(
+    const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
+) {
+    return wrap(sysview, &ParticleData::getRTags, location, mode);
 }
 
 inline DLManagedTensorPtr net_forces(
