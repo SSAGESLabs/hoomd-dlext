@@ -30,7 +30,8 @@ public:
     ParticleDataSPtr particle_data() const;
     ExecutionConfigurationSPtr exec_config() const;
     bool is_gpu_enabled() const;
-    unsigned int particle_number() const;
+    unsigned int local_particle_number() const;
+    unsigned int global_particle_number() const;
     int get_device_id(bool gpu_flag) const;
 private:
     SystemDefinitionSPtr sysdef;

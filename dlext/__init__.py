@@ -18,5 +18,6 @@ from .dlpack_extension import (
     orientations,
     positions_types,
     tags,
+    rtags,
     velocities_masses,
 )

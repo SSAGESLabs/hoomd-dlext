@@ -19,7 +19,8 @@ SystemView::SystemView(SystemDefinitionSPtr sysdef)
 ParticleDataSPtr SystemView::particle_data() const { return pdata; }
 ExecutionConfigurationSPtr SystemView::exec_config() const { return exec_conf; }
 bool SystemView::is_gpu_enabled() const { return exec_conf->isCUDAEnabled(); }
-unsigned int SystemView::particle_number() const { return pdata->getN(); }
+unsigned int SystemView::local_particle_number() const { return pdata->getN(); }
+unsigned int SystemView::global_particle_number() const { return pdata->getNGlobal(); }
 
 int SystemView::get_device_id(bool gpu_flag) const {
     maybe_unused(gpu_flag); // prevent compiler warnings when ENABLE_CUDA is not defined

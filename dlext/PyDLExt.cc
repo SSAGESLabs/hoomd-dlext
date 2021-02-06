@@ -16,7 +16,8 @@ void export_SystemView(py::module& m)
         .def(py::init<SystemDefinitionSPtr>())
         .def("particle_data", &SystemView::particle_data)
         .def("is_gpu_enabled", &SystemView::is_gpu_enabled)
-        .def("particle_number", &SystemView::particle_number)
+        .def("local_particle_number", &SystemView::local_particle_number)
+        .def("global_particle_number", &SystemView::global_particle_number)
         .def("get_device_id", &SystemView::get_device_id)
     ;
 }
@@ -63,6 +64,7 @@ PYBIND11_MODULE(dlpack_extension, m)
     m.def("diameters", encapsulate<&diameters>);
     m.def("images", encapsulate<&images>);
     m.def("tags", encapsulate<&tags>);
+    m.def("rtags", encapsulate<&rtags>);
     m.def("net_forces", encapsulate<&net_forces>);
     m.def("net_torques", encapsulate<&net_torques>);
     m.def("net_virial", encapsulate<&net_virial>);
