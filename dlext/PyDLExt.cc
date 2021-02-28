@@ -19,6 +19,7 @@ void export_SystemView(py::module& m)
         .def("local_particle_number", &SystemView::local_particle_number)
         .def("global_particle_number", &SystemView::global_particle_number)
         .def("get_device_id", &SystemView::get_device_id)
+        .def("synchronize", &SystemView::synchronize)
     ;
 }
 
