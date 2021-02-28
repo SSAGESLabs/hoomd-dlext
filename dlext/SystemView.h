@@ -33,6 +33,7 @@ public:
     unsigned int local_particle_number() const;
     unsigned int global_particle_number() const;
     int get_device_id(bool gpu_flag) const;
+    void synchronize();
 private:
     SystemDefinitionSPtr sysdef;
     ParticleDataSPtr pdata;
