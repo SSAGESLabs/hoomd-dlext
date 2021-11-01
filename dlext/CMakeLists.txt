@@ -4,6 +4,7 @@ set(
     ${COMPONENT_NAME}_sources
     SystemView.cc
     PyDLExt.cc
+    Sampler.cc
 )
 
 pybind11_add_module(${COMPONENT_NAME} SHARED ${${COMPONENT_NAME}_sources} NO_EXTRAS)
