@@ -20,4 +20,5 @@ from .dlpack_extension import (
     tags,
     rtags,
     velocities_masses,
+    CPPSampler,
 )

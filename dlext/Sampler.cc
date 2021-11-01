@@ -19,6 +19,8 @@ template <>
 constexpr DLDataType dtype<int3>() { return DLDataType {kDLInt, 32, 1}; }
 template <>
 constexpr DLDataType dtype<unsigned int>() { return DLDataType {kDLUInt, 32, 1}; }
+template <>
+constexpr DLDataType dtype<int>() { return DLDataType {kDLInt, 32, 1}; }
 
 template <typename>
 constexpr int64_t stride1();
@@ -32,6 +34,8 @@ template <>
 constexpr int64_t stride1<int3>() { return 3; }
 template <>
 constexpr int64_t stride1<unsigned int>() { return 1; }
+template <>
+constexpr int64_t stride1<int>() { return 1; }
 
 Sampler::Sampler(shared_ptr<SystemDefinition> sysdef,
                  py::function python_update)
