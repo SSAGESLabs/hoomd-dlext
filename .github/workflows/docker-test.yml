@@ -30,7 +30,7 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/pysages-hoomd:latest
-	  
+
       - name: Test the build container
         run: |
           docker run --rm bash -c "python3 -c "import hoomd; import hoomd.dlext"
