@@ -154,7 +154,7 @@ DLDataBridge Sampler::wrap(TV* ptr,
 
 void export_Sampler(py::module& m)
 {
-  py::class_<Sampler, std::shared_ptr<Sampler> >(m, "CPPSampler", py::base<HalfStepHook>())
+  py::class_<Sampler, std::shared_ptr<Sampler> >(m, "DLextSampler", py::base<HalfStepHook>())
     .def(py::init<std::shared_ptr<SystemDefinition>, py::function>())
     .def("run_on_data", &Sampler::run_on_data)
     ;
