@@ -35,7 +35,6 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: false
-	  load: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/pysages-hoomd:test
 
       - name: Test the build container
