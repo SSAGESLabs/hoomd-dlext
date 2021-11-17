@@ -3,6 +3,7 @@
 
 #include "PyDLExt.h"
 #include "PyHalfStepHook.h"
+#include "Sampler.h"
 
 
 using namespace sysview;
@@ -54,6 +55,7 @@ PYBIND11_MODULE(dlpack_extension, m)
     // Classes
     export_SystemView(m);
     export_PyHalfStepHook(m);
+    export_Sampler(m);
 
     // Methods
     m.def("positions_types", encapsulate<&positions_types>);
