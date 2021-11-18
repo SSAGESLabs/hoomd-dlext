@@ -63,10 +63,14 @@ void Sampler::setSystemDefinition(shared_ptr<SystemDefinition> sysdef)
 
 void Sampler::run_on_data(py::function py_exec, const access_location::Enum location, const access_mode::Enum mode)
 {
+#ifdef ENABLE_CUDA
   if(location == access_location::device and not m_exec_conf->isCUDAEnabled())
     throw runtime_error("Invalid request for device memory in non-cuda run.");
 
   const bool on_device = location == access_location::device;
+#else
+  const bool on_device = false;
+#endif//ENABLE_CUDA
 
   const ArrayHandle<Scalar4> pos(m_pdata->getPositions(), location, mode);
   auto pos_bridge = wrap<Scalar4, Scalar>(pos.data, on_device, 4 );
@@ -96,7 +100,11 @@ void Sampler::update(unsigned int timestep)
 
   // Accessing the handles here holds them valid until the block of this function.
   // This keeps them valid for the python function call
+#ifdef ENABLE_CUDA
   auto location = m_exec_conf->isCUDAEnabled() ? access_location::device : access_location::host;
+#else
+  auto location = access_location::host;
+#endif//ENABLE_CUDA
 
   // const ArrayHandle<Scalar4> pos(m_pdata->getPositions(), location, access_mode::read);
   // auto pos_tensor = wrap<Scalar4, Scalar>(pos.data, 4 );
@@ -124,7 +132,11 @@ DLDataBridge Sampler::wrap(TV* ptr,
   assert((size2 >= 1)); // assert is a macro so the extra parentheses are requiered here
 
   const unsigned int particle_number = this->m_pdata->getN();
+#ifdef ENABLE_CUDA
   const int gpu_id = on_device ? m_exec_conf->getGPUIds()[0] : m_exec_conf->getRank();
+#else
+  const int gpu_id = m_exec_conf->getRank();
+#endif//ENABLE_CUDA
 
   DLDataBridge bridge;
   bridge.tensor.manager_ctx = NULL;
