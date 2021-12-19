@@ -1,8 +1,4 @@
-cmake_minimum_required(VERSION 3.1...3.18)
-#
-if(${CMAKE_VERSION} VERSION_LESS 3.18)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-endif()
+cmake_minimum_required(VERSION 3.16..3.22)
 
 # Set-up project
 project(dlext LANGUAGES C CXX)
