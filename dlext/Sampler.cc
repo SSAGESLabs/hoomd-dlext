@@ -1,6 +1,5 @@
 #include "Sampler.h"
 #include "hoomd/HOOMDMath.h"
-#include "dlpack.h"
 #include <stdexcept>
 
 using namespace std;
@@ -143,7 +142,7 @@ DLDataBridge Sampler::wrap(TV* ptr,
   bridge.tensor.deleter = NULL;
 
   bridge.tensor.dl_tensor.data = opaque(ptr);
-  bridge.tensor.dl_tensor.ctx = DLContext{on_device ? kDLGPU : kDLCPU, gpu_id};
+  bridge.tensor.dl_tensor.device = DLDevice{on_device ? kDLCUDA : kDLCPU, gpu_id};
   bridge.tensor.dl_tensor.dtype = dtype<TS>();
 
   bridge.shape.push_back(particle_number);

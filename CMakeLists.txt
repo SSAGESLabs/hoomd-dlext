@@ -17,6 +17,9 @@ if(NOT HOOMD_INSTALL_PREFIX)
     set(HOOMD_INSTALL_PREFIX ${HOOMD_ROOT})
 endif()
 
+include("${PROJECT_MODULE_PATH}/FetchCPM.cmake")
+include("${PROJECT_MODULE_PATH}/FetchDLPack.cmake")
+
 # Plugins must be built as shared libraries
 if(ENABLE_STATIC)
     message(SEND_ERROR "Plugins cannot be built against a statically compiled hoomd")
