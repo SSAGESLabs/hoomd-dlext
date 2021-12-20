@@ -3,27 +3,31 @@ cmake_minimum_required(VERSION 3.16..3.22)
 # Set-up project
 project(dlext LANGUAGES C CXX)
 
-include(FindHOOMD.cmake)
+# Try finding HOOMD first from the current environment
+find_package(HOOMD 2.6.0 QUIET)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_MODULE_PATH})
+set(PROJECT_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+set(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH} ${PROJECT_MODULE_PATH})
+
+if(NOT HOOMD_FOUND)
+    find_package(HOOMD 2.6.0 REQUIRED)
+endif()
+
+if(NOT HOOMD_INSTALL_PREFIX)
+    set(HOOMD_INSTALL_PREFIX ${HOOMD_ROOT})
+endif()
 
 # Plugins must be built as shared libraries
 if(ENABLE_STATIC)
     message(SEND_ERROR "Plugins cannot be built against a statically compiled hoomd")
 endif()
-#
-set(BUILD_SHARED_LIBS on)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX ${HOOMD_ROOT} CACHE PATH "Installation prefix" FORCE)
+    set(CMAKE_INSTALL_PREFIX ${HOOMD_INSTALL_PREFIX} CACHE PATH "" FORCE)
 endif()
 
-set(PYTHON_MODULE_BASE_DIR ${CMAKE_INSTALL_PREFIX})
-message(STATUS "Install plugin to: " ${PYTHON_MODULE_BASE_DIR})
+message(STATUS "Install plugin to: " ${CMAKE_INSTALL_PREFIX})
 
 # Process subdirectories
 add_subdirectory(${PROJECT_NAME})
-
-if(BUILD_TESTING)
-    add_subdirectory(test)
-endif()
+add_subdirectory(python)
