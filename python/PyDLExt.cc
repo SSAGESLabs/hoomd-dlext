@@ -6,7 +6,6 @@
 #include "Sampler.h"
 
 
-using namespace sysview;
 using namespace dlext;
 namespace py = pybind11;
 

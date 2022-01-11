@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef CXX11_UTILS_H_
+#define CXX11_UTILS_H_
 
 
 #if !defined(DEFAULT_VISIBILITY)
@@ -16,27 +16,15 @@
 #define INVOKE(object, member_ptr) ((object).*(member_ptr))
 
 
-//#include <vector>
-
-
-namespace utils
+namespace cxx11utils
 {
 
 
 template <typename T>
 constexpr void maybe_unused(T&&) { }
 
-//template<typename F, typename T>
-//void flatten_iterate(F f, const std::vector< std::vector<T> >& outter) {
-//    for (const auto& inner : outter) {
-//        for (const auto& value : inner) {
-//            f(value);
-//        }
-//    }
-//}
+
+}  // namespace cxx11utils
 
 
-} // namespace utils
-
-
-#endif // UTILS_H_
+#endif  // CXX11_UTILS_H_

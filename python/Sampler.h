@@ -7,7 +7,7 @@
 #include "hoomd/HalfStepHook.h"
 #include "hoomd/GlobalArray.h"
 #include <hoomd/extern/pybind/include/pybind11/pybind11.h>
-#include "dlpack.h"
+#include "dlpack/dlpack.h"
 
 struct DLDataBridge {
     std::vector<int64_t> shape;

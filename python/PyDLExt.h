@@ -13,7 +13,6 @@
 namespace dlext
 {
 
-using namespace sysview;
 
 using PropertyExtractor =
     DLManagedTensorPtr (*)(const SystemView&, AccessLocation, AccessMode)

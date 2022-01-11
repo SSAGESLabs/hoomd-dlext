@@ -7,14 +7,12 @@
 #include <vector>
 
 #include "SystemView.h"
-#include "dlpack.h"
+#include "dlpack/dlpack.h"
 
 
 namespace dlext
 {
 
-
-using namespace sysview;
 
 using DLManagedTensorPtr = DLManagedTensor*;
 
@@ -62,9 +60,9 @@ void DLDataBridgeDeleter(DLManagedTensorPtr tensor)
 template <typename T>
 inline void* opaque(T* data) { return static_cast<void*>(data); }
 
-inline DLContext context(const SystemView& sysview, bool gpu_flag)
+inline DLDevice dldevice(const SystemView& sysview, bool gpu_flag)
 {
-    return DLContext { gpu_flag ? kDLGPU : kDLCPU, sysview.get_device_id(gpu_flag) };
+    return DLDevice { gpu_flag ? kDLCUDA : kDLCPU, sysview.get_device_id(gpu_flag) };
 }
 
 template <typename>
@@ -131,7 +129,7 @@ DLManagedTensorPtr wrap(
 
     auto& dltensor = bridge->tensor.dl_tensor;
     dltensor.data = opaque(bridge->handle->data);
-    dltensor.ctx = context(sysview, gpu_flag);
+    dltensor.device = dldevice(sysview, gpu_flag);
     dltensor.dtype = dtype<T>();
 
     auto& shape = bridge->shape;
@@ -231,7 +229,7 @@ inline DLManagedTensorPtr net_virial(
 }
 
 
-} // namespace dlext
+}  // namespace dlext
 
 
-#endif // HOOMD_DLPACK_EXTENSION_H_
+#endif  // HOOMD_DLPACK_EXTENSION_H_

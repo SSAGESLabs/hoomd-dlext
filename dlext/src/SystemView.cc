@@ -2,11 +2,11 @@
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
 #include "SystemView.h"
-#include "utils.h"
+#include "cxx11utils.h"
 
 
-using namespace sysview;
-using namespace utils;
+using namespace dlext;
+using namespace cxx11utils;
 
 
 SystemView::SystemView(SystemDefinitionSPtr sysdef)
