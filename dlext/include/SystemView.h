@@ -8,14 +8,14 @@
 #include <memory>
 #include <type_traits>
 
-#include "utils.h"
+#include "cxx11utils.h"
 
 #include "hoomd/ExecutionConfiguration.h"
 #include "hoomd/GlobalArray.h"
 #include "hoomd/SystemDefinition.h"
 
 
-namespace sysview
+namespace dlext
 {
 
 
@@ -41,7 +41,7 @@ private:
 };
 
 
-} // namespace sysview
+}  // namespace dlext
 
 
-#endif // HOOMD_SYSVIEW_H_
+#endif  // HOOMD_SYSVIEW_H_

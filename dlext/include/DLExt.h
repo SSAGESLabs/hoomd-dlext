@@ -14,8 +14,6 @@ namespace dlext
 {
 
 
-using namespace sysview;
-
 using DLManagedTensorPtr = DLManagedTensor*;
 
 using AccessLocation = access_location::Enum;
@@ -231,7 +229,7 @@ inline DLManagedTensorPtr net_virial(
 }
 
 
-} // namespace dlext
+}  // namespace dlext
 
 
-#endif // HOOMD_DLPACK_EXTENSION_H_
+#endif  // HOOMD_DLPACK_EXTENSION_H_
