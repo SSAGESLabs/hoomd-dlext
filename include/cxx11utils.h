@@ -21,7 +21,7 @@ namespace cxx11utils
 
 
 template <typename T>
-constexpr void maybe_unused(T&&) { }
+inline void maybe_unused(T&&) { }
 
 
 }  // namespace cxx11utils
