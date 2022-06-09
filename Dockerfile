@@ -1,5 +1,7 @@
 FROM ssages/pysages-base:latest
+WORKDIR /hoomd-dlext/.docker_build
 
-COPY . hoomd-dlext
-RUN  cd hoomd-dlext && mkdir build && cd build && cmake .. && make install
+COPY . ../
+
+RUN cmake .. && make install
 RUN python3 -c "import hoomd; import hoomd.dlext"

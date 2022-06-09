@@ -28,16 +28,20 @@ cmake ..
 ```
 
 And finally we compile the plugin on your target machine
+
 ```shell
 make
 ```
+
 and install it into the HOOMD-blue installation.
 It is important to have a writeable installation for this to work.
+
 ```shell
 make install
 ```
 
 For a quick and simple test run:
+
 ```shell
 cd ~
 python -c "import hoomd; import hoomd.dlext"
