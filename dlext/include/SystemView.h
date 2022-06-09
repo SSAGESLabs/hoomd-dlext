@@ -4,7 +4,6 @@
 #ifndef HOOMD_SYSVIEW_H_
 #define HOOMD_SYSVIEW_H_
 
-
 #include <memory>
 #include <type_traits>
 
@@ -14,34 +13,30 @@
 #include "hoomd/GlobalArray.h"
 #include "hoomd/SystemDefinition.h"
 
-
-namespace dlext
-{
-
+namespace dlext {
 
 using ParticleDataSPtr = std::shared_ptr<ParticleData>;
 using SystemDefinitionSPtr = std::shared_ptr<SystemDefinition>;
-using ExecutionConfigurationSPtr = std::shared_ptr<const ExecutionConfiguration>;
-
+using ExecutionConfigurationSPtr =
+    std::shared_ptr<const ExecutionConfiguration>;
 
 class DEFAULT_VISIBILITY SystemView {
 public:
-    SystemView(SystemDefinitionSPtr sysdef);
-    ParticleDataSPtr particle_data() const;
-    ExecutionConfigurationSPtr exec_config() const;
-    bool is_gpu_enabled() const;
-    unsigned int local_particle_number() const;
-    unsigned int global_particle_number() const;
-    int get_device_id(bool gpu_flag) const;
-    void synchronize();
+  SystemView(SystemDefinitionSPtr sysdef);
+  ParticleDataSPtr particle_data() const;
+  ExecutionConfigurationSPtr exec_config() const;
+  bool is_gpu_enabled() const;
+  unsigned int local_particle_number() const;
+  unsigned int global_particle_number() const;
+  int get_device_id(bool gpu_flag) const;
+  void synchronize();
+
 private:
-    SystemDefinitionSPtr sysdef;
-    ParticleDataSPtr pdata;
-    ExecutionConfigurationSPtr exec_conf;
+  SystemDefinitionSPtr sysdef;
+  ParticleDataSPtr pdata;
+  ExecutionConfigurationSPtr exec_conf;
 };
 
+} // namespace dlext
 
-}  // namespace dlext
-
-
-#endif  // HOOMD_SYSVIEW_H_
+#endif // HOOMD_SYSVIEW_H_
