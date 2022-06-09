@@ -16,7 +16,11 @@
 
 namespace cxx11utils {
 
-template <typename T> constexpr void maybe_unused(T &&) {}
+namespace cxx11utils {
+
+template <typename T> inline void maybe_unused(T &&) {}
+
+} // namespace cxx11utils
 
 } // namespace cxx11utils
 
