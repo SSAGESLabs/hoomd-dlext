@@ -4,23 +4,15 @@
 #ifndef HOOMD_SYSVIEW_H_
 #define HOOMD_SYSVIEW_H_
 
-
-#include "cxx11utils.h"
 #include "DLExt.h"
-
 #include "hoomd/SystemDefinition.h"
-
-#include <unordered_set>
-
 
 namespace dlext
 {
 
 namespace cxx11 = cxx11utils;
 
-
 class SystemView;
-
 
 // { // Aliases
 
@@ -132,7 +124,6 @@ DLManagedTensorPtr wrap(
     return &(bridge.release()->tensor);
 }
 
-
 struct PositionsTypes final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
@@ -237,8 +228,6 @@ struct NetVirial final {
     }
 };
 
-
 }  // namespace dlext
-
 
 #endif  // HOOMD_SYSVIEW_H_

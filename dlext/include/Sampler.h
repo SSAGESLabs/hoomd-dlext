@@ -33,9 +33,6 @@ public:
 
     //! Wraps the system positions, velocities, reverse tags, images and forces as
     //! DLPack tensors and passes them to the external function `callback`.
-    //! Before passing to the callback, each DLPack tensor is wrapped in an
-    //! encapsulate call (which can return and additional wrapper or the tensor
-    //! unchanged).
     //!
     //! The (non-typed) signature of `callback` is expected to be
     //!     callback(positions, velocities, rtags, images, forces, n)
@@ -66,10 +63,10 @@ template <typename ExternalUpdater, template <typename> class Wrapper>
 Sampler<ExternalUpdater, Wrapper>::Sampler(
     SystemView sysview, ExternalUpdater update, AccessLocation location, AccessMode mode
 )
-    : _sysview {sysview}
-    , _update_callback {update}
-    , _location {location}
-    , _mode {mode}
+    : _sysview { sysview }
+    , _update_callback { update }
+    , _location { location }
+    , _mode { mode }
 { }
 
 template <typename ExternalUpdater, template <typename> class Wrapper>

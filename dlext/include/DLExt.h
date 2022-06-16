@@ -4,15 +4,12 @@
 #ifndef HOOMD_DLPACK_EXTENSION_H_
 #define HOOMD_DLPACK_EXTENSION_H_
 
-
-#include <memory>
 #include <type_traits>
 #include <vector>
 
+#include "cxx11utils.h"
 #include "dlpack/dlpack.h"
-
 #include "hoomd/GlobalArray.h"
-
 
 namespace dlext
 {
@@ -103,8 +100,6 @@ constexpr int64_t stride1<int3>() { return 3; }
 template <>
 constexpr int64_t stride1<unsigned int>() { return 1; }
 
-
 }  // namespace dlext
-
 
 #endif  // HOOMD_DLPACK_EXTENSION_H_

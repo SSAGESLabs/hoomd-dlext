@@ -7,8 +7,6 @@
 #include "SystemView.h"
 #include "hoomd/extern/pybind/include/pybind11/pybind11.h"
 
-#include <unordered_map>
-
 namespace dlext
 {
 
@@ -60,8 +58,10 @@ struct DEFAULT_VISIBILITY PyEncapsulator final {
         if (!sysview.in_context_manager())
             throw std::runtime_error("Cannot access property outside a context manager.");
         auto tensor = Property::from(sysview, location, mode);
-        auto capsule = enpycapsulate(tensor, false);
+        auto capsule = enpycapsulate(tensor, /* autodestruct = */ false);
         kPyCapsulesPool.push_back(std::make_tuple(capsule.ptr(), tensor, tensor->deleter));
+        // We manually delete the tensor when exiting the context manager,
+        // so we need to prevent others from grabbing the default deleter.
         tensor->deleter = do_not_delete;
         return capsule;
     }
