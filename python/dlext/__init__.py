@@ -6,7 +6,6 @@
 from .dlpack_extension import (
     AccessLocation,
     AccessMode,
-    HalfStepHook,
     SystemView,
     angular_momenta,
     charges,
@@ -20,5 +19,5 @@ from .dlpack_extension import (
     tags,
     rtags,
     velocities_masses,
-    DLextSampler,
+    DLExtSampler,
 )
