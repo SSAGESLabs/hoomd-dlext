@@ -25,7 +25,7 @@ inline PyCapsule enpycapsulate(DLManagedTensorPtr tensor, bool autodestruct = tr
     auto capsule = PyCapsule(tensor, kDLTensorCapsuleName, nullptr);
     if (autodestruct)
         PyCapsule_SetDestructor(
-            capsule,
+            capsule.ptr(),
             [](PyObject* obj) {  // PyCapsule_Destructor
                 auto dlmt = static_cast<DLManagedTensorPtr>(
                     PyCapsule_GetPointer(obj, kDLTensorCapsuleName)

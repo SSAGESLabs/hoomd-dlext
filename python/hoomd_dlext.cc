@@ -2,12 +2,10 @@
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
 #include "PyDLExt.h"
-#include "PySampler.h"
+#include "Sampler.h"
 
-
-using namespace dlext;
 namespace py = pybind11;
-
+using namespace dlext;
 
 void export_SystemView(py::module& m)
 {
@@ -33,15 +31,17 @@ void export_SystemView(py::module& m)
 
 void export_PySampler(py::module m)
 {
+    using PyFunction = py::function;
+    using PySampler = Sampler<PyFunction, PyUnsafeEncapsulator>;
     using PySamplerSPtr = std::shared_ptr<PySampler>;
 
     py::class_<PySampler, PySamplerSPtr>(m, "DLExtSampler")
         .def(py::init<SystemView, PyFunction, AccessLocation, AccessMode>())
         .def("system_view", &PySampler::system_view)
         .def("forward_data", &PySampler::forward_data<PyFunction>)
+        .def("update", &PySampler::update)
     ;
 }
-
 
 PYBIND11_MODULE(dlpack_extension, m)
 {
