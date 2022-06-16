@@ -133,7 +133,7 @@ DLManagedTensorPtr wrap(
 }
 
 
-struct PositionsTypes {
+struct PositionsTypes final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -141,7 +141,7 @@ struct PositionsTypes {
     }
 };
 
-struct VelocitiesMasses {
+struct VelocitiesMasses final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -149,7 +149,7 @@ struct VelocitiesMasses {
     }
 };
 
-struct Orientations {
+struct Orientations final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -157,7 +157,7 @@ struct Orientations {
     }
 };
 
-struct AngularMomenta {
+struct AngularMomenta final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -165,7 +165,7 @@ struct AngularMomenta {
     }
 };
 
-struct MomentsOfInertia {
+struct MomentsOfInertia final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -173,7 +173,7 @@ struct MomentsOfInertia {
     }
 };
 
-struct Charges {
+struct Charges final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -181,7 +181,7 @@ struct Charges {
     }
 };
 
-struct Diameters {
+struct Diameters final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -189,7 +189,7 @@ struct Diameters {
     }
 };
 
-struct Images {
+struct Images final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -197,7 +197,7 @@ struct Images {
     }
 };
 
-struct Tags {
+struct Tags final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -205,7 +205,7 @@ struct Tags {
     }
 };
 
-struct RTags {
+struct RTags final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -213,7 +213,7 @@ struct RTags {
     }
 };
 
-struct NetForces {
+struct NetForces final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -221,7 +221,7 @@ struct NetForces {
     }
 };
 
-struct NetTorques{
+struct NetTorques final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
@@ -229,7 +229,7 @@ struct NetTorques{
     }
 };
 
-struct NetVirial {
+struct NetVirial final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     ) {
