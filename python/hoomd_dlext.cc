@@ -2,6 +2,7 @@
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
 #include "PyDLExt.h"
+#include "PyHalfStepHook.h"
 #include "Sampler.h"
 
 namespace py = pybind11;
@@ -9,10 +10,9 @@ using namespace dlext;
 
 void export_SystemView(py::module& m)
 {
-    using SystemViewSPtr = std::shared_ptr<SystemView>;
     using PyObject = py::object;
 
-    py::class_<SystemView, SystemViewSPtr>(m, "SystemView")
+    py::class_<SystemView>(m, "SystemView")
         .def(py::init<SystemDefinitionSPtr>())
         .def("particle_data", &SystemView::particle_data)
         .def("is_gpu_enabled", &SystemView::is_gpu_enabled)
@@ -32,11 +32,17 @@ void export_SystemView(py::module& m)
 
 void export_PySampler(py::module m)
 {
+    using HalfStepHookSPtr = std::shared_ptr<HalfStepHook>;
     using PyFunction = py::function;
     using PySampler = Sampler<PyFunction, PyUnsafeEncapsulator>;
     using PySamplerSPtr = std::shared_ptr<PySampler>;
 
-    py::class_<PySampler, PySamplerSPtr>(m, "DLExtSampler")
+    py::class_<HalfStepHook, PyHalfStepHook, HalfStepHookSPtr>(m, "HalfStepHook")
+        .def(py::init<>())
+        .def("update", &HalfStepHook::update)
+    ;
+
+    py::class_<PySampler, PySamplerSPtr, HalfStepHook>(m, "DLExtSampler")
         .def(py::init<SystemView, PyFunction, AccessLocation, AccessMode>())
         .def("system_view", &PySampler::system_view)
         .def("forward_data", &PySampler::forward_data<PyFunction>)
