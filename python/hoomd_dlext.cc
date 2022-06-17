@@ -14,6 +14,7 @@ void export_SystemView(py::module& m)
 
     py::class_<SystemView, SystemViewSPtr>(m, "SystemView")
         .def(py::init<SystemDefinitionSPtr>())
+        .def("particle_data", &SystemView::particle_data)
         .def("is_gpu_enabled", &SystemView::is_gpu_enabled)
         .def("local_particle_number", &SystemView::local_particle_number)
         .def("global_particle_number", &SystemView::global_particle_number)
