@@ -18,7 +18,7 @@ void export_SystemView(py::module& m)
         .def("local_particle_number", &SystemView::local_particle_number)
         .def("global_particle_number", &SystemView::global_particle_number)
         .def("synchronize", &SystemView::synchronize)
-        .def("__enter__", [](SystemView& self) { self.enter(); })
+        .def("__enter__", [](SystemView& self) { self.enter(); return self; })
         .def("__exit__", [](SystemView& self, PyObject, PyObject, PyObject) {
             while (kPyCapsulesPool.size() > 0) {
                 invalidate(kPyCapsulesPool.back());
