@@ -14,6 +14,8 @@
 namespace dlext
 {
 
+using namespace hoomd;
+
 // { // Aliases
 
 using DLManagedTensorPtr = DLManagedTensor*;

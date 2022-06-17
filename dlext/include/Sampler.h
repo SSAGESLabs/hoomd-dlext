@@ -10,6 +10,8 @@
 namespace dlext
 {
 
+using TimeStep = unsigned int;
+
 template <typename ExternalUpdater, template <typename> class Wrapper>
 class DEFAULT_VISIBILITY Sampler : public HalfStepHook {
 public:
@@ -24,7 +26,7 @@ public:
     {
         _sysview = SystemView(sysdef);
     }
-    void update(unsigned int timestep) override
+    void update(TimeStep timestep) override
     {
         forward_data(_update_callback, _location, _mode, timestep);
     }
@@ -36,12 +38,12 @@ public:
     //!
     //! The (non-typed) signature of `callback` is expected to be
     //!     callback(positions, velocities, rtags, images, forces, n)
-    //! where `n` ìs an additional `unsigned int` parameter.
+    //! where `n` ìs an additional `TimeStep` parameter.
     //!
     //! The data for the particles information is requested at the given `location`
     //! and access `mode`. NOTE: Forces are always passed in readwrite mode.
     template <typename Callback>
-    void forward_data(Callback callback, AccessLocation location, AccessMode mode, unsigned int n)
+    void forward_data(Callback callback, AccessLocation location, AccessMode mode, TimeStep n)
     {
         auto pos_capsule = Wrapper<PositionsTypes>::wrap(_sysview, location, mode);
         auto vel_capsule = Wrapper<VelocitiesMasses>::wrap(_sysview, location, mode);
