@@ -4,17 +4,11 @@
 #ifndef PY_HOOMD_HS_HOOK_H_
 #define PY_HOOMD_HS_HOOK_H_
 
-
-#include "SystemView.h"
-
 #include "hoomd/HalfStepHook.h"
-
 #include "hoomd/extern/pybind/include/pybind11/pybind11.h"
-
 
 namespace dlext
 {
-
 
 //! Trampoline class to allow overriding HalfStepHook mathods from within Pyhton.
 //!
@@ -36,8 +30,6 @@ public:
     }
 };
 
+}  // namespace dlext
 
-} // namespace dlext
-
-
-#endif // PY_HOOMD_HS_HOOK_H_
+#endif  // PY_HOOMD_HS_HOOK_H_
