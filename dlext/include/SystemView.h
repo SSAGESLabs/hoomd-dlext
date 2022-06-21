@@ -52,13 +52,13 @@ public:
     void synchronize();
     void enter();
     void exit();
+
 private:
     SystemDefinitionSPtr _sysdef;
     ParticleDataSPtr _pdata;
     ExecutionConfigurationSPtr _exec_conf;
     bool _in_context_manager = false;
 };
-
 
 inline DLDevice dldevice(const SystemView& sysview, bool gpu_flag)
 {
@@ -83,7 +83,8 @@ DLManagedTensorPtr wrap(
     const SystemView& sysview, ArrayPropertyGetter<A, T, O> getter,
     AccessLocation requested_location, AccessMode mode,
     int64_t size2 = 1, uint64_t offset = 0, uint64_t stride1_offset = 0
-) {
+)
+{
     assert((size2 >= 1));
 
     auto location = sysview.is_gpu_enabled() ? requested_location : kOnHost;
@@ -127,7 +128,8 @@ DLManagedTensorPtr wrap(
 struct PositionsTypes final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getPositions, location, mode, 4);
     }
 };
@@ -135,7 +137,8 @@ struct PositionsTypes final {
 struct VelocitiesMasses final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getVelocities, location, mode, 4);
     }
 };
@@ -143,7 +146,8 @@ struct VelocitiesMasses final {
 struct Orientations final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getOrientationArray, location, mode, 4);
     }
 };
@@ -151,7 +155,8 @@ struct Orientations final {
 struct AngularMomenta final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getAngularMomentumArray, location, mode, 4);
     }
 };
@@ -159,7 +164,8 @@ struct AngularMomenta final {
 struct MomentsOfInertia final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getMomentsOfInertiaArray, location, mode, 3);
     }
 };
@@ -167,7 +173,8 @@ struct MomentsOfInertia final {
 struct Charges final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getCharges, location, mode);
     }
 };
@@ -175,7 +182,8 @@ struct Charges final {
 struct Diameters final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getDiameters, location, mode);
     }
 };
@@ -183,7 +191,8 @@ struct Diameters final {
 struct Images final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getImages, location, mode, 3);
     }
 };
@@ -191,7 +200,8 @@ struct Images final {
 struct Tags final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getTags, location, mode);
     }
 };
@@ -199,7 +209,8 @@ struct Tags final {
 struct RTags final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getRTags, location, mode);
     }
 };
@@ -207,7 +218,8 @@ struct RTags final {
 struct NetForces final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getNetForce, location, mode, 4);
     }
 };
@@ -215,7 +227,8 @@ struct NetForces final {
 struct NetTorques final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getNetTorqueArray, location, mode, 4);
     }
 };
@@ -223,7 +236,8 @@ struct NetTorques final {
 struct NetVirial final {
     static DLManagedTensorPtr from(
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
-    ) {
+    )
+    {
         return wrap(sysview, &ParticleData::getNetVirial, location, mode, 6);
     }
 };

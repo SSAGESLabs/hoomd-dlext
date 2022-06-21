@@ -6,6 +6,7 @@
 from .dlpack_extension import (
     AccessLocation,
     AccessMode,
+    DLExtSampler,
     SystemView,
     angular_momenta,
     charges,
@@ -16,8 +17,7 @@ from .dlpack_extension import (
     net_virial,
     orientations,
     positions_types,
-    tags,
     rtags,
+    tags,
     velocities_masses,
-    DLExtSampler,
 )
