@@ -43,12 +43,14 @@ void SystemView::synchronize()
 #endif
 }
 
-void SystemView::enter() {
+void SystemView::enter()
+{
     if (_in_context_manager)
         throw std::runtime_error("Context manager scope already active.");
     _in_context_manager = true;
 }
 
-void SystemView::exit() {
+void SystemView::exit()
+{
     _in_context_manager = false;
 }

@@ -26,8 +26,7 @@ void export_SystemView(py::module& m)
                 kPyCapsulesPool.pop_back();
             }
             self.exit();
-        })
-    ;
+        });
 }
 
 void export_PySampler(py::module m)
@@ -39,15 +38,13 @@ void export_PySampler(py::module m)
 
     py::class_<HalfStepHook, PyHalfStepHook, HalfStepHookSPtr>(m, "HalfStepHook")
         .def(py::init<>())
-        .def("update", &HalfStepHook::update)
-    ;
+        .def("update", &HalfStepHook::update);
 
     py::class_<PySampler, PySamplerSPtr, HalfStepHook>(m, "DLExtSampler")
         .def(py::init<SystemView, PyFunction, AccessLocation, AccessMode>())
         .def("system_view", &PySampler::system_view)
         .def("forward_data", &PySampler::forward_data<PyFunction>)
-        .def("update", &PySampler::update)
-    ;
+        .def("update", &PySampler::update);
 }
 
 PYBIND11_MODULE(dlpack_extension, m)
@@ -58,13 +55,12 @@ PYBIND11_MODULE(dlpack_extension, m)
 #ifdef ENABLE_CUDA
         .value("OnDevice", kOnDevice)
 #endif
-    ;
+        ;
 
     py::enum_<AccessMode>(m, "AccessMode")
         .value("Read", kRead)
         .value("ReadWrite", kReadWrite)
-        .value("Overwrite", kOverwrite)
-    ;
+        .value("Overwrite", kOverwrite);
 
     // Classes
     export_SystemView(m);

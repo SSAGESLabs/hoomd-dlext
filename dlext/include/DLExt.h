@@ -4,12 +4,12 @@
 #ifndef HOOMD_DLPACK_EXTENSION_H_
 #define HOOMD_DLPACK_EXTENSION_H_
 
-#include <type_traits>
-#include <vector>
-
 #include "cxx11utils.h"
 #include "dlpack/dlpack.h"
 #include "hoomd/GlobalArray.h"
+
+#include <type_traits>
+#include <vector>
 
 namespace dlext
 {
@@ -32,13 +32,13 @@ constexpr uint8_t kBits = std::is_same<Scalar, float>::value ? 32 : 64;
 
 constexpr DLManagedTensor kInvalidDLManagedTensor {
     DLTensor {
-        nullptr,                     // data
+        nullptr,  // data
         DLDevice { kDLExtDev, -1 },  // device
-        -1,                          // ndim
-        DLDataType { 0, 0, 0 },      // dtype
-        nullptr,                     // shape
-        nullptr,                     // stride
-        0                            // byte_offset
+        -1,  // ndim
+        DLDataType { 0, 0, 0 },  // dtype
+        nullptr,  // shape
+        nullptr,  // stride
+        0  // byte_offset
     },
     nullptr,
     nullptr
@@ -79,15 +79,15 @@ inline void* opaque(const T* data) { return (void*)(data); }
 template <typename>
 constexpr DLDataType dtype();
 template <>
-constexpr DLDataType dtype<Scalar4>() { return DLDataType {kDLFloat, kBits, 1}; }
+constexpr DLDataType dtype<Scalar4>() { return DLDataType { kDLFloat, kBits, 1 }; }
 template <>
-constexpr DLDataType dtype<Scalar3>() { return DLDataType {kDLFloat, kBits, 1}; }
+constexpr DLDataType dtype<Scalar3>() { return DLDataType { kDLFloat, kBits, 1 }; }
 template <>
-constexpr DLDataType dtype<Scalar>() { return DLDataType {kDLFloat, kBits, 1}; }
+constexpr DLDataType dtype<Scalar>() { return DLDataType { kDLFloat, kBits, 1 }; }
 template <>
-constexpr DLDataType dtype<int3>() { return DLDataType {kDLInt, 32, 1}; }
+constexpr DLDataType dtype<int3>() { return DLDataType { kDLInt, 32, 1 }; }
 template <>
-constexpr DLDataType dtype<unsigned int>() { return DLDataType {kDLUInt, 32, 1}; }
+constexpr DLDataType dtype<unsigned int>() { return DLDataType { kDLUInt, 32, 1 }; }
 
 template <typename>
 constexpr int64_t stride1();
