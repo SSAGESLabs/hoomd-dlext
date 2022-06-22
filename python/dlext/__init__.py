@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 # This file is part of `hoomd-dlext`, see LICENSE.md
 
+# flake8:noqa:F401
 
 # API exposed to Python
 from .dlpack_extension import (
     AccessLocation,
     AccessMode,
-    HalfStepHook,
+    DLExtSampler,
     SystemView,
     angular_momenta,
     charges,
@@ -17,8 +18,7 @@ from .dlpack_extension import (
     net_virial,
     orientations,
     positions_types,
-    tags,
     rtags,
+    tags,
     velocities_masses,
-    DLextSampler,
 )

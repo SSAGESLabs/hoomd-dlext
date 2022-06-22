@@ -2,45 +2,55 @@
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
 #include "SystemView.h"
-#include "cxx11utils.h"
-
 
 using namespace dlext;
 using namespace cxx11utils;
 
-
 SystemView::SystemView(SystemDefinitionSPtr sysdef)
-    : sysdef { sysdef }
-    , pdata { sysdef->getParticleData() }
+    : _sysdef { sysdef }
+    , _pdata { sysdef->getParticleData() }
 {
-    exec_conf = pdata->getExecConf();
+    _exec_conf = _pdata->getExecConf();
 }
 
-ParticleDataSPtr SystemView::particle_data() const { return pdata; }
-ExecutionConfigurationSPtr SystemView::exec_config() const { return exec_conf; }
-bool SystemView::is_gpu_enabled() const { return exec_conf->isCUDAEnabled(); }
-unsigned int SystemView::local_particle_number() const { return pdata->getN(); }
-unsigned int SystemView::global_particle_number() const { return pdata->getNGlobal(); }
+ParticleDataSPtr SystemView::particle_data() const { return _pdata; }
+ExecutionConfigurationSPtr SystemView::exec_config() const { return _exec_conf; }
+bool SystemView::is_gpu_enabled() const { return _exec_conf->isCUDAEnabled(); }
+bool SystemView::in_context_manager() const { return _in_context_manager; }
+unsigned int SystemView::local_particle_number() const { return _pdata->getN(); }
+unsigned int SystemView::global_particle_number() const { return _pdata->getNGlobal(); }
 
 int SystemView::get_device_id(bool gpu_flag) const
 {
-    maybe_unused(gpu_flag); // prevent compiler warnings when ENABLE_CUDA is not defined
+    maybe_unused(gpu_flag);  // prevent compiler warnings when ENABLE_CUDA is not defined
 #ifdef ENABLE_CUDA
     if (gpu_flag)
-        return exec_conf->getGPUIds()[0];
+        return _exec_conf->getGPUIds()[0];
 #endif
-    return exec_conf->getRank();
+    return _exec_conf->getRank();
 }
 
 void SystemView::synchronize()
 {
 #ifdef ENABLE_CUDA
-    if (exec_conf->isCUDAEnabled()) {
-        auto gpu_ids = exec_conf->getGPUIds();
-        for (int i = exec_conf->getNumActiveGPUs() - 1; i >= 0; --i) {
+    if (_exec_conf->isCUDAEnabled()) {
+        auto gpu_ids = _exec_conf->getGPUIds();
+        for (int i = _exec_conf->getNumActiveGPUs() - 1; i >= 0; --i) {
             cudaSetDevice(gpu_ids[i]);
             cudaDeviceSynchronize();
         }
     }
 #endif
+}
+
+void SystemView::enter()
+{
+    if (_in_context_manager)
+        throw std::runtime_error("Context manager scope already active.");
+    _in_context_manager = true;
+}
+
+void SystemView::exit()
+{
+    _in_context_manager = false;
 }
