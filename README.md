@@ -26,7 +26,7 @@ mkdir build && cd build
 cmake ..
 ```
 
-And finally we compile the plugin on your target machine
+And finally we compile the plugin on the target machine
 ```shell
 make
 ```
