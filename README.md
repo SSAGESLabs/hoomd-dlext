@@ -15,7 +15,7 @@ Assuming HOOMD-blue is already installed on the system, the plugin can be instal
 
 First, we obtain a copy of this plugin, for example via `git clone`.
 
-```shell
+````shell
 git clone https://github.com/SSAGESLabs/hoomd-dlext.git
 cd hoomd-dlext
 
@@ -24,18 +24,22 @@ We then configure the installation with CMake. It is important, that the python 
 ```shell
 mkdir build && cd build
 cmake ..
-```
+````
 
 And finally we compile the plugin on the target machine
+
 ```shell
 make
 ```
+
 and install it into the HOOMD-blue installation path (the latter must be writeable for this to work).
+
 ```shell
 make install
 ```
 
 For a quick and simple test run:
+
 ```shell
 cd ~
 python -c "import hoomd; import hoomd.dlext"
