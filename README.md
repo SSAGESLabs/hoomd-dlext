@@ -16,8 +16,8 @@ Assuming HOOMD-blue is already installed on the system, the plugin can be instal
 First, we obtain a copy of this plugin, for example via `git clone`.
 
 ```shell
-cd /path/to/hoomd-dlext
-```
+git clone https://github.com/SSAGESLabs/hoomd-dlext.git
+cd hoomd-dlext
 
 Now we configure the installation with CMake. Here it is important, that the python version detected by CMake can successfully `import hoomd`.
 
