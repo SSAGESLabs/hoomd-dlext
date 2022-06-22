@@ -19,7 +19,7 @@ First, we obtain a copy of this plugin, for example via `git clone`.
 git clone https://github.com/SSAGESLabs/hoomd-dlext.git
 cd hoomd-dlext
 
-Now we configure the installation with CMake. Here it is important, that the python version detected by CMake can successfully `import hoomd`.
+We then configure the installation with CMake. It is important, that the python version detected by CMake can successfully `import hoomd`.
 
 ```shell
 mkdir build && cd build
