@@ -30,8 +30,7 @@ And finally we compile the plugin on the target machine
 ```shell
 make
 ```
-and install it into the HOOMD-blue installation.
-It is important to have a writeable installation for this to work.
+and install it into the HOOMD-blue installation path (the latter must be writeable for this to work).
 ```shell
 make install
 ```
