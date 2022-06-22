@@ -1,3 +1,4 @@
+
 # HOOMD-dlext
 
 Provides access to [HOOMD-blue](https://hoomd-blue.readthedocs.io/en/v2.9.7/) simulation data on CPU or GPU via [DLPack](https://github.com/dmlc/dlpack)
@@ -15,16 +16,17 @@ Assuming HOOMD-blue is already installed on the system, the plugin can be instal
 
 First, we obtain a copy of this plugin, for example via `git clone`.
 
-````shell
+```shell
 git clone https://github.com/SSAGESLabs/hoomd-dlext.git
 cd hoomd-dlext
+```
 
 We then configure the installation with CMake. It is important, that the python version detected by CMake can successfully `import hoomd`.
 
 ```shell
 mkdir build && cd build
 cmake ..
-````
+```
 
 And finally we compile the plugin on the target machine
 
