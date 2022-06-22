@@ -13,7 +13,7 @@ For GPU support, the base HOOMD-blue installation must be built for CUDA GPUs.
 
 Assuming HOOMD-blue is already installed on the system, the plugin can be installed as an external component
 
-The next step is to obtain a copy of this plugin preferably via `git clone`.
+First, we obtain a copy of this plugin, for example via `git clone`.
 
 ```shell
 cd /path/to/hoomd-dlext
