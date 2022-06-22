@@ -11,7 +11,7 @@ For system requirements, check HOOMD-blue's install [requirements](https://hoomd
 At the moment we only support installations on Linux and Mac.
 For GPU support, the base HOOMD-blue installation must be built for CUDA GPUs.
 
-For example installation as an external component can be performed after HOOMD-blue is already installed on the system.
+Assuming HOOMD-blue is already installed on the system, the plugin can be installed as an external component
 
 The next step is to obtain a copy of this plugin preferably via `git clone`.
 
