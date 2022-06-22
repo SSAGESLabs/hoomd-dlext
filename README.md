@@ -1,4 +1,3 @@
-
 # HOOMD-dlext
 
 Provides access to [HOOMD-blue](https://hoomd-blue.readthedocs.io/en/v2.9.7/) simulation data on CPU or GPU via [DLPack](https://github.com/dmlc/dlpack)
