@@ -9,7 +9,7 @@ At the moment, only HOOMD-blue version 2 is supported (support HOOMD-blue versio
 Follow the [Plugins and Components Guide](https://hoomd-blue.readthedocs.io/en/v2.9.7/developer.html) from the HOOMD-blue reference documentation site.
 For system requirements, check HOOMD-blue's install [requirements](https://hoomd-blue.readthedocs.io/en/v2.9.7/installation.html#compiling-from-source).
 At the moment we only support installations on Linux and Mac.
-For GPU support, the base HOOMD-blue installation must be installed for CUDA GPUs.
+For GPU support, the base HOOMD-blue installation must be built for CUDA GPUs.
 
 For example installation as an external component can be performed after HOOMD-blue is already installed on the system.
 
