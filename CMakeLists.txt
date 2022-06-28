@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.16..3.24)
 # Set-up project
 project(dlext LANGUAGES C CXX)
 
-# Try finding HOOMD first from the current environment
-find_package(HOOMD 2.6.0 QUIET)
-
 set(PROJECT_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_MODULE_PATH})
 
