@@ -7,31 +7,42 @@
 #include "SystemView.h"
 #include "hoomd/HalfStepHook.h"
 
+namespace hoomd
+{
+namespace md
+{
 namespace dlext
 {
 
+#ifdef HOOMD2
 using TimeStep = unsigned int;
+#else
+using TimeStep = uint64_t;
+#endif
 
 template <typename ExternalUpdater, template <typename> class Wrapper>
 class DEFAULT_VISIBILITY Sampler : public HalfStepHook {
 public:
     //! Constructor
     Sampler(
-        SystemView sysview,
+        SystemView& sysview,
         ExternalUpdater update_callback,
         AccessLocation location,
         AccessMode mode
-    );
-    void setSystemDefinition(SystemDefinitionSPtr sysdef) override
-    {
-        _sysview = SystemView(sysdef);
-    }
+    )
+        : _sysview { sysview }
+        , _update_callback { update_callback }
+        , _location { location }
+        , _mode { mode }
+    { }
+
+    void setSystemDefinition(SPtr<SystemDefinition> sysdef) override { }
     void update(TimeStep timestep) override
     {
         forward_data(_update_callback, _location, _mode, timestep);
     }
 
-    const SystemView& system_view() const;
+    const SystemView& system_view() const { return _sysview; }
 
     //! Wraps the system positions, velocities, reverse tags, images and forces as
     //! DLPack tensors and passes them to the external function `callback`.
@@ -61,22 +72,8 @@ private:
     AccessMode _mode;
 };
 
-template <typename ExternalUpdater, template <typename> class Wrapper>
-Sampler<ExternalUpdater, Wrapper>::Sampler(
-    SystemView sysview, ExternalUpdater update, AccessLocation location, AccessMode mode
-)
-    : _sysview { sysview }
-    , _update_callback { update }
-    , _location { location }
-    , _mode { mode }
-{ }
-
-template <typename ExternalUpdater, template <typename> class Wrapper>
-const SystemView& Sampler<ExternalUpdater, Wrapper>::system_view() const
-{
-    return _sysview;
-}
-
 }  // namespace dlext
+}  // namespace md
+}  // namespace hoomd
 
 #endif  // DLEXT_SAMPLER_H_

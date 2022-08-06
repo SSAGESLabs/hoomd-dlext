@@ -20,6 +20,9 @@ namespace cxx11utils
 {
 
 template <typename T>
+using SPtr = std::shared_ptr<T>;
+
+template <typename T>
 inline void maybe_unused(T&&)
 { }
 

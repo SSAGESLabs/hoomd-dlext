@@ -5,8 +5,17 @@
 #define PY_HOOMD_HS_HOOK_H_
 
 #include "hoomd/HalfStepHook.h"
+#ifdef HOOMD2
 #include "hoomd/extern/pybind/include/pybind11/pybind11.h"
+#else
+#include <pybind11/pybind11.h>
+#endif
+#include "Sampler.h"
 
+namespace hoomd
+{
+namespace md
+{
 namespace dlext
 {
 
@@ -15,21 +24,23 @@ namespace dlext
 //! References:
 //! - https://pybind11.readthedocs.io/en/stable/advanced/classes.html
 //!
-class PyHalfStepHook : public HalfStepHook {
+class DEFAULT_VISIBILITY PyHalfStepHook : public HalfStepHook {
 public:
     using HalfStepHook::HalfStepHook;
 
-    void setSystemDefinition(SystemDefinitionSPtr sysdef) override
+    void setSystemDefinition(SPtr<SystemDefinition> sysdef) override
     {
         PYBIND11_OVERLOAD_PURE(void, HalfStepHook, setSystemDefinition, sysdef);
     }
 
-    void update(unsigned int timestep) override
+    void update(TimeStep timestep) override
     {
         PYBIND11_OVERLOAD_PURE(void, HalfStepHook, update, timestep);
     }
 };
 
 }  // namespace dlext
+}  // namespace md
+}  // namespace hoomd
 
 #endif  // PY_HOOMD_HS_HOOK_H_

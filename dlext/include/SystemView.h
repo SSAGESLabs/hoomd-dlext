@@ -5,14 +5,18 @@
 #define HOOMD_SYSVIEW_H_
 
 #include "DLExt.h"
-#include "hoomd/SystemDefinition.h"
+#include "hoomd/System.h"
 
+namespace hoomd
+{
+namespace md
+{
 namespace dlext
 {
 
 namespace cxx11 = cxx11utils;
 
-class SystemView;
+class DEFAULT_VISIBILITY SystemView;
 
 // { // Aliases
 
@@ -27,10 +31,6 @@ const auto kRead = access_mode::read;
 const auto kReadWrite = access_mode::readwrite;
 const auto kOverwrite = access_mode::overwrite;
 
-using ParticleDataSPtr = std::shared_ptr<ParticleData>;
-using SystemDefinitionSPtr = std::shared_ptr<SystemDefinition>;
-using ExecutionConfigurationSPtr = std::shared_ptr<const ExecutionConfiguration>;
-
 template <template <typename> class Array, typename T, typename Object>
 using ArrayPropertyGetter = const Array<T>& (Object::*)() const;
 
@@ -41,9 +41,10 @@ using PropertyGetter = T (*)(const SystemView&, AccessLocation, AccessMode);
 
 class DEFAULT_VISIBILITY SystemView {
 public:
-    SystemView(SystemDefinitionSPtr sysdef);
-    ParticleDataSPtr particle_data() const;
-    ExecutionConfigurationSPtr exec_config() const;
+    SystemView(SPtr<System> system);
+    SPtr<System> system();
+    SPtr<ParticleData> particle_data() const;
+    SPtr<const ExecutionConfiguration> exec_config() const;
     bool is_gpu_enabled() const;
     bool in_context_manager() const;
     unsigned int local_particle_number() const;
@@ -54,9 +55,9 @@ public:
     void exit();
 
 private:
-    SystemDefinitionSPtr _sysdef;
-    ParticleDataSPtr _pdata;
-    ExecutionConfigurationSPtr _exec_conf;
+    SPtr<System> _system;
+    SPtr<ParticleData> _pdata;
+    SPtr<const ExecutionConfiguration> _exec_conf;
     bool _in_context_manager = false;
 };
 
@@ -88,10 +89,10 @@ DLManagedTensorPtr wrap(
     assert((size2 >= 1));
 
     auto location = sysview.is_gpu_enabled() ? requested_location : kOnHost;
-    auto handle = cxx11utils::make_unique<ArrayHandle<T>>(
+    auto handle = cxx11::make_unique<ArrayHandle<T>>(
         INVOKE(*(sysview.particle_data()), getter)(), location, mode
     );
-    auto bridge = cxx11utils::make_unique<DLDataBridge<T>>(handle);
+    auto bridge = cxx11::make_unique<DLDataBridge<T>>(handle);
 
 #ifdef ENABLE_CUDA
     auto gpu_flag = (location == kOnDevice);
@@ -243,5 +244,7 @@ struct NetVirial final {
 };
 
 }  // namespace dlext
+}  // namespace md
+}  // namespace hoomd
 
 #endif  // HOOMD_SYSVIEW_H_

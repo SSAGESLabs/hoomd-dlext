@@ -5,8 +5,16 @@
 #define PY_HOOMD_DLPACK_EXTENSION_H_
 
 #include "SystemView.h"
+#ifdef HOOMD2
 #include "hoomd/extern/pybind/include/pybind11/pybind11.h"
+#else
+#include <pybind11/pybind11.h>
+#endif
 
+namespace hoomd
+{
+namespace md
+{
 namespace dlext
 {
 
@@ -84,5 +92,7 @@ void invalidate(PyTensorBundle& bundle)
 }
 
 }  // namespace dlext
+}  // namespace md
+}  // namespace hoomd
 
 #endif  // PY_HOOMD_DLPACK_EXTENSION_H_
