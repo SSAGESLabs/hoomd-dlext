@@ -25,6 +25,7 @@ BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Custom
 IncludeBlocks: Regroup
 IndentWidth: 4
+NamespaceIndentation: None
 PenaltyBreakAssignment: 100
 SpacesBeforeTrailingComments: 2
 Standard: Cpp11
