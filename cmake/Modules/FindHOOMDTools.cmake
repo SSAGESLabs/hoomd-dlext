@@ -3,10 +3,18 @@ set(HOOMD_GPU_PLATFORM "CUDA" CACHE STRING "GPU backend: CUDA or HIP.")
 find_package(HOOMD QUIET)
 
 if(HOOMD_FOUND)
-    if(${HOOMD_VERSION} VERSION_GREATER_EQUAL "2.6.0")
+    if(
+        ${HOOMD_VERSION} VERSION_GREATER_EQUAL "3.5.0" OR (
+            ${HOOMD_VERSION} VERSION_LESS "3" AND
+            ${HOOMD_VERSION} VERSION_GREATER_EQUAL "2.6.0"
+        )
+    )
         message(STATUS "Found HOOMD: ${HOOMD_DIR} (version ${HOOMD_VERSION})")
     else()
-        message(FATAL_ERROR "Minimum supported HOOMD version is v2.6.0 (version ${HOOMD_VERSION})")
+        message(FATAL_ERROR
+            "Supported HOOMD versions are v2.6.0 to v2.9.7 or >= v3.5.0 "
+            "(version ${HOOMD_VERSION})"
+        )
     endif()
 endif()
 
@@ -21,7 +29,7 @@ if(ENABLE_STATIC)
     message(SEND_ERROR "Plugins cannot be built against a statically compiled hoomd")
 endif()
 
-if(${HOOMD_VERSION} VERSION_LESS "3.4.0")
+if(${HOOMD_VERSION} VERSION_LESS "3.5.0")
     add_compile_definitions(EXPORT_HALFSTEPHOOK)
     if(${HOOMD_VERSION} VERSION_LESS "3")
         add_compile_definitions(HOOMD2)
