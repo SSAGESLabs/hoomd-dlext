@@ -3,18 +3,18 @@
 
 #include "SystemView.h"
 
-using namespace dlext;
-using namespace cxx11utils;
+using namespace hoomd::md::dlext;
 
-SystemView::SystemView(SystemDefinitionSPtr sysdef)
-    : _sysdef { sysdef }
-    , _pdata { sysdef->getParticleData() }
+SystemView::SystemView(SPtr<System> system)
+    : _system { system }
+    , _pdata { system->getSystemDefinition()->getParticleData() }
 {
     _exec_conf = _pdata->getExecConf();
 }
 
-ParticleDataSPtr SystemView::particle_data() const { return _pdata; }
-ExecutionConfigurationSPtr SystemView::exec_config() const { return _exec_conf; }
+SPtr<System> SystemView::system() { return _system; }
+SPtr<ParticleData> SystemView::particle_data() const { return _pdata; }
+SPtr<const ExecutionConfiguration> SystemView::exec_config() const { return _exec_conf; }
 bool SystemView::is_gpu_enabled() const { return _exec_conf->isCUDAEnabled(); }
 bool SystemView::in_context_manager() const { return _in_context_manager; }
 unsigned int SystemView::local_particle_number() const { return _pdata->getN(); }

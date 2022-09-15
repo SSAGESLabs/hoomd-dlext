@@ -11,9 +11,14 @@
 #include <type_traits>
 #include <vector>
 
+namespace hoomd
+{
+namespace md
+{
 namespace dlext
 {
 
+using namespace cxx11utils;
 using namespace hoomd;
 
 // { // Aliases
@@ -103,5 +108,7 @@ template <>
 constexpr int64_t stride1<unsigned int>() { return 1; }
 
 }  // namespace dlext
+}  // namespace md
+}  // namespace hoomd
 
 #endif  // HOOMD_DLPACK_EXTENSION_H_

@@ -2,22 +2,25 @@
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
 #include "PyDLExt.h"
+#ifdef EXPORT_HALFSTEPHOOK
 #include "PyHalfStepHook.h"
+#endif
 #include "Sampler.h"
 
 namespace py = pybind11;
-using namespace dlext;
+using namespace hoomd::md::dlext;
 
 void export_SystemView(py::module& m)
 {
     using PyObject = py::object;
 
     py::class_<SystemView>(m, "SystemView")
-        .def(py::init<SystemDefinitionSPtr>())
-        .def("particle_data", &SystemView::particle_data)
-        .def("is_gpu_enabled", &SystemView::is_gpu_enabled)
-        .def("local_particle_number", &SystemView::local_particle_number)
-        .def("global_particle_number", &SystemView::global_particle_number)
+        .def(py::init<SPtr<System>>())
+        .def_property_readonly("system", &SystemView::system)
+        .def_property_readonly("particle_data", &SystemView::particle_data)
+        .def_property_readonly("is_gpu_enabled", &SystemView::is_gpu_enabled)
+        .def_property_readonly("local_particle_number", &SystemView::local_particle_number)
+        .def_property_readonly("global_particle_number", &SystemView::global_particle_number)
         .def("synchronize", &SystemView::synchronize)
         .def("__enter__", [](SystemView& self) { self.enter(); return self; })
         .def("__exit__", [](SystemView& self, PyObject, PyObject, PyObject) {
@@ -31,17 +34,17 @@ void export_SystemView(py::module& m)
 
 void export_PySampler(py::module m)
 {
-    using HalfStepHookSPtr = std::shared_ptr<HalfStepHook>;
     using PyFunction = py::function;
     using PySampler = Sampler<PyFunction, PyUnsafeEncapsulator>;
-    using PySamplerSPtr = std::shared_ptr<PySampler>;
 
-    py::class_<HalfStepHook, PyHalfStepHook, HalfStepHookSPtr>(m, "HalfStepHook")
+#ifdef EXPORT_HALFSTEPHOOK
+    py::class_<HalfStepHook, PyHalfStepHook, SPtr<HalfStepHook>>(m, "HalfStepHook")
         .def(py::init<>())
         .def("update", &HalfStepHook::update);
+#endif
 
-    py::class_<PySampler, PySamplerSPtr, HalfStepHook>(m, "DLExtSampler")
-        .def(py::init<SystemView, PyFunction, AccessLocation, AccessMode>())
+    py::class_<PySampler, SPtr<PySampler>, HalfStepHook>(m, "DLExtSampler")
+        .def(py::init<SystemView&, PyFunction, AccessLocation, AccessMode>())
         .def("system_view", &PySampler::system_view)
         .def("forward_data", &PySampler::forward_data<PyFunction>)
         .def("update", &PySampler::update);

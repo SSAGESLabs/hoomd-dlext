@@ -2,9 +2,9 @@ set(pybind11_MODULE_NAME "dlpack_extension")
 
 pybind11_add_module(${pybind11_MODULE_NAME} MODULE "")
 
+target_sources(${pybind11_MODULE_NAME} PRIVATE hoomd_dlext.cc)
 target_compile_features(${pybind11_MODULE_NAME} PRIVATE cxx_std_11)
 target_link_libraries(${pybind11_MODULE_NAME} PRIVATE ${PROJECT_NAME})
-target_sources(${pybind11_MODULE_NAME} PRIVATE hoomd_dlext.cc)
 
 # if we are compiling with MPI support built in, set appropriate
 # compiler/linker flags
