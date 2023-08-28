@@ -6,14 +6,23 @@ function(fetch_dlpack ver)
         GIT_SHALLOW     TRUE
         DOWNLOAD_ONLY   TRUE
     )
-    set(BUILD_MOCK OFF CACHE BOOL "Do not build DLPack mock target" FORCE)
-    add_subdirectory(${dlpack_SOURCE_DIR} "${PROJECT_BINARY_DIR}/extern/dlpack")
+    set(dlpack_ADDED ${dlpack_ADDED} PARENT_SCOPE)
+    set(dlpack_SOURCE_DIR ${dlpack_SOURCE_DIR} PARENT_SCOPE)
 endfunction()
 
-find_package(dlpack 0.5 QUIET)
+option(FETCH_DLPACK "Fetch DLPack without looking for it locally" OFF)
+
+if(NOT FETCH_DLPACK)
+    find_package(dlpack 0.5 QUIET)
+endif()
 
 if(dlpack_FOUND)
     message(STATUS "Found dlpack: ${dlpack_DIR} (version ${dlpack_VERSION})")
 else()
-    fetch_dlpack(0.7)
+    fetch_dlpack(0.8)
+    if(dlpack_ADDED)
+        add_library(dlpack INTERFACE)
+        add_library(dlpack::dlpack ALIAS dlpack)
+        target_include_directories(dlpack INTERFACE "${dlpack_SOURCE_DIR}/include")
+    endif()
 endif()
