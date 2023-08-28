@@ -21,7 +21,9 @@ if(ENABLE_MPI)
    endif()
 endif()
 
-fix_cudart_rpath(${pybind11_MODULE_NAME})
+if(${HOOMD_VERSION} VERSION_LESS "4")
+    fix_cudart_rpath(${pybind11_MODULE_NAME})
+endif()
 
 # Install the library
 install(TARGETS ${pybind11_MODULE_NAME}
