@@ -28,7 +28,7 @@ static std::vector<PyTensorBundle> kPyCapsulesPool;
 
 inline PyCapsule enpycapsulate(DLManagedTensorPtr tensor, bool autodestruct = true)
 {
-    auto capsule = PyCapsule(tensor, kDLTensorCapsuleName, nullptr);
+    auto capsule = PyCapsule(tensor, kDLTensorCapsuleName);  // default destructor is nullptr
     if (autodestruct)
         PyCapsule_SetDestructor(
             capsule.ptr(),
