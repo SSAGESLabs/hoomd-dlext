@@ -41,6 +41,9 @@ void export_PySampler(py::module m)
     py::class_<HalfStepHook, PyHalfStepHook, SPtr<HalfStepHook>>(m, "HalfStepHook")
         .def(py::init<>())
         .def("update", &HalfStepHook::update);
+#else
+    py::module_::import("hoomd");
+    py::module_::import("hoomd.md");
 #endif
 
     py::class_<PySampler, SPtr<PySampler>, HalfStepHook>(m, "DLExtSampler")
