@@ -1,14 +1,37 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
+#include "CallbackHandler.h"
 #include "PyDLExt.h"
 #ifdef EXPORT_HALFSTEPHOOK
 #include "PyHalfStepHook.h"
 #endif
-#include "Sampler.h"
 
 namespace py = pybind11;
 using namespace hoomd::md::dlext;
+
+void export_CallbackHandler(py::module m)
+{
+    using PyFunction = py::function;
+    using PyCallbackHandler = CallbackHandler<PyUnsafeEncapsulator>;
+
+    py::class_<PyCallbackHandler, SPtr<PyCallbackHandler>>(m, "CallbackHandler")
+        .def(py::init<SystemView&>())
+        .def("system_view", &PyCallbackHandler::system_view)
+        .def("forward_data", &PyCallbackHandler::forward_data<PyFunction>);
+}
+
+void export_HalfStepHook(py::module m)
+{
+#ifdef EXPORT_HALFSTEPHOOK
+    py::class_<HalfStepHook, PyHalfStepHook, SPtr<HalfStepHook>>(m, "HalfStepHook")
+        .def(py::init<>())
+        .def("update", &HalfStepHook::update);
+#else
+    auto md = py::module_::import("hoomd.md");
+    m.attr("HalfStepHook") = md.attr("HalfStepHook");
+#endif
+}
 
 void export_SystemView(py::module& m)
 {
@@ -32,29 +55,13 @@ void export_SystemView(py::module& m)
         });
 }
 
-void export_PySampler(py::module m)
+PYBIND11_MODULE(_api, m)
 {
-    using PyFunction = py::function;
-    using PySampler = Sampler<PyFunction, PyUnsafeEncapsulator>;
+    // We want to display the members of the module as `hoomd.dlext.x`
+    // instead of `hoomd.dlext._api.x`.
+    py::str module_name = m.attr("__name__");
+    m.attr("__name__") = "hoomd.dlext";
 
-#ifdef EXPORT_HALFSTEPHOOK
-    py::class_<HalfStepHook, PyHalfStepHook, SPtr<HalfStepHook>>(m, "HalfStepHook")
-        .def(py::init<>())
-        .def("update", &HalfStepHook::update);
-#else
-    py::module_::import("hoomd");
-    py::module_::import("hoomd.md");
-#endif
-
-    py::class_<PySampler, SPtr<PySampler>, HalfStepHook>(m, "DLExtSampler")
-        .def(py::init<SystemView&, PyFunction, AccessLocation, AccessMode>())
-        .def("system_view", &PySampler::system_view)
-        .def("forward_data", &PySampler::forward_data<PyFunction>)
-        .def("update", &PySampler::update);
-}
-
-PYBIND11_MODULE(dlpack_extension, m)
-{
     // Enums
     py::enum_<AccessLocation>(m, "AccessLocation")
         .value("OnHost", kOnHost)
@@ -69,8 +76,9 @@ PYBIND11_MODULE(dlpack_extension, m)
         .value("Overwrite", kOverwrite);
 
     // Classes
+    export_CallbackHandler(m);
+    export_HalfStepHook(m);
     export_SystemView(m);
-    export_PySampler(m);
 
     // Methods
     m.def("positions_types", &PyEncapsulator<PositionsTypes>::wrap);
@@ -86,4 +94,7 @@ PYBIND11_MODULE(dlpack_extension, m)
     m.def("net_forces", &PyEncapsulator<NetForces>::wrap);
     m.def("net_torques", &PyEncapsulator<NetTorques>::wrap);
     m.def("net_virial", &PyEncapsulator<NetVirial>::wrap);
+
+    // Set back the module_name to its original value
+    m.attr("__name__") = module_name;
 }

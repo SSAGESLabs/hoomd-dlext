@@ -10,7 +10,7 @@
 #else
 #include <pybind11/pybind11.h>
 #endif
-#include "Sampler.h"
+#include "CallbackHandler.h"
 
 namespace hoomd
 {
