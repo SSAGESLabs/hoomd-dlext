@@ -61,6 +61,7 @@ PYBIND11_MODULE(_api, m)
     // instead of `hoomd.dlext._api.x`.
     py::str module_name = m.attr("__name__");
     m.attr("__name__") = "hoomd.dlext";
+    m.attr("__version__") = Py_STRINGIFY(GIT_VERSION);
 
     // Enums
     py::enum_<AccessLocation>(m, "AccessLocation")
