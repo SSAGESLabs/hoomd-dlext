@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 // This file is part of `hoomd-dlext`, see LICENSE.md
 
-#ifndef DLEXT_SAMPLER_H_
-#define DLEXT_SAMPLER_H_
+#ifndef DLEXT_CALLBACKHANDLER_H_
+#define DLEXT_CALLBACKHANDLER_H_
 
-#include "SystemView.h"
-#include "hoomd/HalfStepHook.h"
+#include "DLExt.h"
 
 namespace hoomd
 {
@@ -20,27 +19,13 @@ using TimeStep = unsigned int;
 using TimeStep = uint64_t;
 #endif
 
-template <typename ExternalUpdater, template <typename> class Wrapper>
-class DEFAULT_VISIBILITY Sampler : public HalfStepHook {
+template <template <typename> class Wrapper>
+class DEFAULT_VISIBILITY CallbackHandler {
 public:
     //! Constructor
-    Sampler(
-        SystemView& sysview,
-        ExternalUpdater update_callback,
-        AccessLocation location,
-        AccessMode mode
-    )
+    CallbackHandler(SystemView& sysview)
         : _sysview { sysview }
-        , _update_callback { update_callback }
-        , _location { location }
-        , _mode { mode }
     { }
-
-    void setSystemDefinition(SPtr<SystemDefinition> sysdef) override { }
-    void update(TimeStep timestep) override
-    {
-        forward_data(_update_callback, _location, _mode, timestep);
-    }
 
     const SystemView& system_view() const { return _sysview; }
 
@@ -67,13 +52,10 @@ public:
 
 private:
     SystemView _sysview;
-    ExternalUpdater _update_callback;
-    AccessLocation _location;
-    AccessMode _mode;
 };
 
 }  // namespace dlext
 }  // namespace md
 }  // namespace hoomd
 
-#endif  // DLEXT_SAMPLER_H_
+#endif  // DLEXT_CALLBACKHANDLER_H_

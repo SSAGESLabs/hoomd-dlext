@@ -1,3 +1,25 @@
+# This requires setuptools-scm to be installed as we will use it to setup the module version
+function(set_version target)
+    find_package(Python QUIET COMPONENTS Interpreter)
+    set(GET_VERSION_SCRIPT "
+from setuptools_scm import get_version
+print(get_version(), end='')"
+    )
+    execute_process(
+        COMMAND ${Python_EXECUTABLE} -c ${GET_VERSION_SCRIPT}
+        ERROR_VARIABLE error
+        OUTPUT_VARIABLE GIT_VERSION
+        RESULT_VARIABLE exit_code
+    )
+    if(NOT exit_code EQUAL 0)
+        message(FATAL_ERROR
+            "The build process depends on setuptools-scm, make sure it is installed. "
+            "Got the following error:\n${error}"
+        )
+    endif()
+    target_compile_definitions(${target} PUBLIC GIT_VERSION=${GIT_VERSION})
+endfunction()
+
 # Try finding HOOMD first from the current environment
 set(HOOMD_GPU_PLATFORM "CUDA" CACHE STRING "GPU backend: CUDA or HIP.")
 find_package(HOOMD QUIET)

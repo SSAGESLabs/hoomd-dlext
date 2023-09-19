@@ -4,7 +4,7 @@
 #ifndef PY_HOOMD_DLPACK_EXTENSION_H_
 #define PY_HOOMD_DLPACK_EXTENSION_H_
 
-#include "SystemView.h"
+#include "DLExt.h"
 #ifdef HOOMD2
 #include "hoomd/extern/pybind/include/pybind11/pybind11.h"
 #else
@@ -19,21 +19,21 @@ namespace dlext
 {
 
 using PyCapsule = pybind11::capsule;
-using PyTensorBundle = std::tuple<PyObject*, DLManagedTensorPtr, DLManagedTensorDeleter>;
+using PyTensorBundle = std::tuple<PyObject*, DLManagedTensor*, DLManagedTensorDeleter>;
 
 const char* const kDLTensorCapsuleName = "dltensor";
 const char* const kUsedDLTensorCapsuleName = "used_dltensor";
 
 static std::vector<PyTensorBundle> kPyCapsulesPool;
 
-inline PyCapsule enpycapsulate(DLManagedTensorPtr tensor, bool autodestruct = true)
+inline PyCapsule enpycapsulate(DLManagedTensor* tensor, bool autodestruct = true)
 {
     auto capsule = PyCapsule(tensor, kDLTensorCapsuleName);  // default destructor is nullptr
     if (autodestruct)
         PyCapsule_SetDestructor(
             capsule.ptr(),
             [](PyObject* obj) {  // PyCapsule_Destructor
-                auto dlmt = static_cast<DLManagedTensorPtr>(
+                auto dlmt = static_cast<DLManagedTensor*>(
                     PyCapsule_GetPointer(obj, kDLTensorCapsuleName)
                 );
                 if (dlmt && dlmt->deleter) {
@@ -52,7 +52,7 @@ struct DEFAULT_VISIBILITY PyUnsafeEncapsulator final {
         const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite
     )
     {
-        DLManagedTensorPtr tensor = Property::from(sysview, location, mode);
+        DLManagedTensor* tensor = Property::from(sysview, location, mode);
         return enpycapsulate(tensor);
     }
 };
