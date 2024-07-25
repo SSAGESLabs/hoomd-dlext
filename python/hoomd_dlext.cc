@@ -86,7 +86,7 @@ PYBIND11_MODULE(_api, m)
     m.def("velocities_masses", &PyEncapsulator<VelocitiesMasses>::wrap);
     m.def("orientations", &PyEncapsulator<Orientations>::wrap);
     m.def("angular_momenta", &PyEncapsulator<AngularMomenta>::wrap);
-    m.def("moments_of_intertia", &PyEncapsulator<MomentsOfInertia>::wrap);
+    m.def("moments_of_inertia", &PyEncapsulator<MomentsOfInertia>::wrap);
     m.def("charges", &PyEncapsulator<Charges>::wrap);
     m.def("diameters", &PyEncapsulator<Diameters>::wrap);
     m.def("images", &PyEncapsulator<Images>::wrap);
