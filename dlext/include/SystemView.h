@@ -5,7 +5,12 @@
 #define HOOMD_SYSVIEW_H_
 
 #include "cxx11utils.h"
+#ifdef HOOMD5
+#include "hoomd/GPUArray.h"
+#include "hoomd/GPUVector.h"
+#else
 #include "hoomd/GlobalArray.h"
+#endif
 #include "hoomd/System.h"
 
 namespace hoomd
@@ -55,18 +60,29 @@ private:
     bool _in_context_manager = false;
 };
 
+#ifdef HOOMD5
+#define DLEXT_LOCAL_ARRAY GPUArray
+#define DLEXT_GLOBAL_ARRAY GPUVector
+#else
+#define DLEXT_LOCAL_ARRAY GlobalArray
+#define DLEXT_GLOBAL_ARRAY GlobalVector
+#endif
+
 template <template <typename> class>
 unsigned int particle_number(const SystemView& sysview);
 template <>
-inline unsigned int particle_number<GlobalArray>(const SystemView& sysview)
+inline unsigned int particle_number<DLEXT_LOCAL_ARRAY>(const SystemView& sysview)
 {
     return sysview.local_particle_number();
 }
 template <>
-inline unsigned int particle_number<GlobalVector>(const SystemView& sysview)
+inline unsigned int particle_number<DLEXT_GLOBAL_ARRAY>(const SystemView& sysview)
 {
     return sysview.global_particle_number();
 }
+
+#undef DLEXT_LOCAL_ARRAY
+#undef DLEXT_GLOBAL_ARRAY
 
 }  // namespace dlext
 }  // namespace md
