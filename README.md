@@ -1,9 +1,9 @@
 # HOOMD-dlext
 
-Provides access to [HOOMD-blue](https://hoomd-blue.readthedocs.io) simulation data on CPU
-or GPU via [DLPack](https://github.com/dmlc/dlpack) This project is primarily designed to
+Provides access to [HOOMD-blue](https://hoomd-blue.readthedocs.io) simulation data on CPU or
+GPU via [DLPack](https://github.com/dmlc/dlpack). This project is primarily designed to
 enable access to HOOMD-blue for the [PySAGES](https://pysages.readthedocs.io) project.
-HOOMD-blue versions 2, 3, and 4 are supported (support HOOMD-blue v4 has not been
+HOOMD-blue versions 2 to 7 are supported (support for HOOMD-blue latest version has not been
 thoroughly tested).
 
 ## Installation

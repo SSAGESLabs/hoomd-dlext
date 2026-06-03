@@ -24,8 +24,13 @@ int SystemView::get_device_id(bool gpu_flag) const
 {
     maybe_unused(gpu_flag);  // prevent compiler warnings when ENABLE_CUDA is not defined
 #ifdef ENABLE_CUDA
-    if (gpu_flag)
+    if (gpu_flag) {
+#ifdef HOOMD5
+        return _exec_conf->getGPUId();
+#else
         return _exec_conf->getGPUIds()[0];
+#endif
+    }
 #endif
     return _exec_conf->getRank();
 }
@@ -34,11 +39,16 @@ void SystemView::synchronize()
 {
 #ifdef ENABLE_CUDA
     if (_exec_conf->isCUDAEnabled()) {
+#ifdef HOOMD5
+        cudaSetDevice(_exec_conf->getGPUId());
+        cudaDeviceSynchronize();
+#else
         auto gpu_ids = _exec_conf->getGPUIds();
         for (int i = _exec_conf->getNumActiveGPUs() - 1; i >= 0; --i) {
             cudaSetDevice(gpu_ids[i]);
             cudaDeviceSynchronize();
         }
+#endif
     }
 #endif
 }

@@ -58,6 +58,13 @@ if(${HOOMD_VERSION} VERSION_LESS "3.5.0")
     endif()
 endif()
 
+# HOOMD v5.0.0 changed two APIs relevant to this plugin: GlobalArray/GlobalVector
+# became GPUArray/GPUVector, and the multi-GPU ExecutionConfiguration accessors
+# (getGPUIds/getNumActiveGPUs) became a single getGPUId.
+if(${HOOMD_VERSION} VERSION_GREATER_EQUAL "5.0.0")
+    add_compile_definitions(HOOMD5)
+endif()
+
 if(ENABLE_HIP AND (HIP_PLATFORM STREQUAL "nvcc"))
     add_compile_definitions(ENABLE_CUDA)
 endif()
