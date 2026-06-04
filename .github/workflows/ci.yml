@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    if: github.repository == 'SSAGESLabs/hoomd-dlext'
     runs-on: ubuntu-latest
 
     steps:
@@ -24,6 +25,7 @@ jobs:
           context: .
 
   test:
+    if: github.repository == 'SSAGESLabs/hoomd-dlext'
     name: HOOMD ${{ matrix.hoomd }}
     runs-on: ubuntu-latest
     strategy:
@@ -94,6 +96,7 @@ jobs:
         run: pytest tests/test_restart.py -v
 
   trunk:
+    if: github.repository == 'SSAGESLabs/hoomd-dlext'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

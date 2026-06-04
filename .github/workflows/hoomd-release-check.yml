@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   check:
+    if: github.repository == 'SSAGESLabs/hoomd-dlext'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repo
