@@ -13,20 +13,91 @@ jobs:
 
     steps:
       - name: Check Out Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v4
 
       - name: Build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v7
         with:
           context: .
+
+  test:
+    name: HOOMD ${{ matrix.hoomd }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.11.0 and 4.9.1 (final 3.x / 4.x) cover the GlobalArray path; 5.0.0
+        # is the GlobalArray -> GPUArray boundary; 7.0.1 is current.
+        include:
+          - hoomd: "3.11.0"
+            cxx_compiler: "cxx-compiler=1.5.2"
+            pybind11: "pybind11<3"
+            eigen: "eigen<5"
+          - hoomd: "4.9.1"
+            cxx_compiler: "cxx-compiler=1.8.0"
+            pybind11: "pybind11<3"
+            eigen: "eigen<5"
+          - hoomd: "5.0.0"
+            cxx_compiler: "cxx-compiler=1.8.0"
+            pybind11: "pybind11<3"
+            eigen: "eigen<5"
+          - hoomd: "6.1.1"
+            eigen: "eigen<5"
+          - hoomd: "7.0.1"
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # setuptools-scm derives the plugin version from git tags
+
+      - name: Set up environment (HOOMD ${{ matrix.hoomd }})
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: dlext
+          create-args: >-
+            python=3.11
+            hoomd=${{ matrix.hoomd }}
+            ${{ matrix.cxx_compiler || 'cxx-compiler' }}
+            ${{ matrix.pybind11 || 'pybind11' }}
+            cmake
+            make
+            ${{ matrix.eigen || 'eigen' }}
+            tbb-devel
+            gsd
+            numpy
+            pytest
+            setuptools-scm
+
+      - name: Build and install the plugin
+        shell: bash -el {0}
+        run: |
+          hoomd_root=$(python -c "import hoomd, os; print(os.path.dirname(hoomd.__file__))")
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_FIND_ROOT_PATH="${hoomd_root}" -DHOOMD_ROOT="${hoomd_root}"
+          cmake --build build -j "$(nproc)"
+          cmake --install build
+
+      - name: Import smoke test
+        shell: bash -el {0}
+        run: python -c "import hoomd, hoomd.dlext; print('hoomd.dlext', hoomd.dlext.__version__)"
+
+      - name: Run interop smoke test
+        shell: bash -el {0}
+        run: pytest tests/test_interop.py -v
+
+      - name: Run restart regression tests
+        shell: bash -el {0}
+        run: pytest tests/test_restart.py -v
+
   trunk:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       - name: Trunk Check
         uses: trunk-io/trunk-action@v1

@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: MIT
 # This file is part of `hoomd-dlext`, see LICENSE.md
-"""
-Focused Python/C++ interop smoke tests.
 
-Importing ``hoomd.dlext`` is not enough to catch pybind11 ABI mismatches: those
-can fail only when HOOMD's Python ``_cpp_sys`` object is converted back to the
-C++ ``std::shared_ptr<System>`` expected by ``SystemView``.
+"""
+Test if hoomd's ``Simulation._cpp_sys`` can be converted back to
+``std::shared_ptr<System>`` by ``SystemView`` to catch pybind11 ABI mismatches.
 """
 
 import pytest
