@@ -64,7 +64,7 @@ jobs:
         with:
           environment-name: dlext
           create-args: >-
-            python=3.11
+            python>=3.10
             hoomd=${{ matrix.hoomd }}
             ${{ matrix.cxx_compiler || 'cxx-compiler' }}
             ${{ matrix.pybind11 || 'pybind11' }}
