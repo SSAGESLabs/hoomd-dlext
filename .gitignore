@@ -1,2 +1,11 @@
 # Build directories
 build*/
+
+# Python caches
+__pycache__/
+
+# Local notes
+.*.md
+
+# Scratch tests
+.scratch_tests/

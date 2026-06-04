@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-readonly TRUNK_LAUNCHER_VERSION="1.2.7" # warning: this line is auto-updated
+readonly TRUNK_LAUNCHER_VERSION="1.3.4" # warning: this line is auto-updated
 
 readonly SUCCESS_MARK="\033[0;32m✔\033[0m"
 readonly FAIL_MARK="\033[0;31m✘\033[0m"
@@ -16,6 +16,12 @@ readonly PROGRESS_MARKS=("⡿" "⢿" "⣻" "⣽" "⣾" "⣷" "⣯" "⣟")
 
 # This is how mktemp(1) decides where to create stuff in tmpfs.
 readonly TMPDIR="${TMPDIR:-/tmp}"
+
+TRUNK_FLAKY_TESTS_INVOCATION=false
+if [[ ${1:-} =~ ^(flakytests|ft)$ ]]; then
+  TRUNK_FLAKY_TESTS_INVOCATION=true
+fi
+readonly TRUNK_FLAKY_TESTS_INVOCATION
 
 KERNEL=$(uname | tr "[:upper:]" "[:lower:]")
 if [[ ${KERNEL} == mingw64* || ${KERNEL} == msys* ]]; then
@@ -27,11 +33,9 @@ MACHINE=$(uname -m)
 if [[ $MACHINE == "aarch64" ]]; then
   MACHINE="arm64";
 fi
-
 readonly MACHINE
 
 PLATFORM="${KERNEL}-${MACHINE}"
-readonly PLATFORM
 
 PLATFORM_UNDERSCORE="${KERNEL}_${MACHINE}"
 readonly PLATFORM_UNDERSCORE
@@ -62,7 +66,11 @@ else
   TRUNK_CACHE="${HOME}/.cache/trunk"
 fi
 readonly TRUNK_CACHE
-readonly CLI_DIR="${TRUNK_CACHE}/cli"
+CLI_DIR="${TRUNK_CACHE}/cli"
+if [[ ${TRUNK_FLAKY_TESTS_INVOCATION} == true ]]; then
+  CLI_DIR="${TRUNK_CACHE}/flaky-tests-cli"
+fi
+readonly CLI_DIR
 mkdir -p "${CLI_DIR}"
 
 # platform check
@@ -84,15 +92,48 @@ check_darwin_version() {
   exit 1
 }
 
-if [[ ${PLATFORM} == "darwin-x86_64" || ${PLATFORM} == "darwin-arm64" ]]; then
-  check_darwin_version
-elif [[ ${PLATFORM} == "linux-x86_64" || ${PLATFORM} == "linux-arm64" || ${PLATFORM} == "windows-x86_64" || ${PLATFORM} == "mingw-x86_64" ]]; then
-  :
+check_os() {
+  if [[ ${PLATFORM} == "darwin-x86_64" || ${PLATFORM} == "darwin-arm64" ]]; then
+    check_darwin_version
+  elif [[ ${PLATFORM} == "linux-x86_64" || ${PLATFORM} == "linux-arm64" || ${PLATFORM} == "windows-x86_64" || ${PLATFORM} == "mingw-x86_64" ]]; then
+    :
+  else
+    echo -e "${FAIL_MARK} Trunk is only supported on Linux (x64_64, arm64), MacOS (x86_64, arm64), and Windows (x86_64)." \
+      "See https://docs.trunk.io for more info."
+    exit 1
+  fi
+}
+
+check_os_flaky_tests() {
+  if [[ ${KERNEL} == "darwin" ]]; then
+    if [[ ${MACHINE} == "arm64" ]]; then
+      FLAKY_TESTS_PLATFORM="aarch64-apple-darwin"
+    elif [[ ${MACHINE} == "x86_64" ]]; then
+      FLAKY_TESTS_PLATFORM="x86_64-apple-darwin"
+    fi
+  elif [[ ${KERNEL} == "linux" ]]; then
+    if [[ ${MACHINE} == "arm64" ]]; then
+      FLAKY_TESTS_PLATFORM="aarch64-unknown-linux"
+    elif [[ ${MACHINE} == "x86_64" ]]; then
+      FLAKY_TESTS_PLATFORM="x86_64-unknown-linux"
+    fi
+  fi
+
+  if [[ -z ${FLAKY_TESTS_PLATFORM} ]]; then
+    echo -e "${FAIL_MARK} Trunk Flaky Tests CLI is only supported on Linux (x86_64, arm64) and MacOS (x86_64, arm64)." \
+      "See https://docs.trunk.io for more info."
+    exit 1
+  fi
+
+  PLATFORM=${FLAKY_TESTS_PLATFORM}
+}
+
+if [[ ${TRUNK_FLAKY_TESTS_INVOCATION} == true ]]; then
+  check_os_flaky_tests
 else
-  echo -e "${FAIL_MARK} Trunk is only supported on Linux (x64_64, arm64), MacOS (x86_64, arm64), and Windows (x86_64)." \
-    "See https://docs.trunk.io for more info."
-  exit 1
+  check_os
 fi
+readonly PLATFORM
 
 TRUNK_TMPDIR="${TMPDIR}/trunk-$(
   set -e
@@ -165,7 +206,7 @@ awk_test() {
 }
 awk_test
 
-readonly CURL_FLAGS="${CURL_FLAGS:- -vvv --max-time 120 --retry 3 --fail}"
+readonly CURL_FLAGS="${CURL_FLAGS:- -vvv --max-time 120 --retry 3 --fail --location}"
 readonly WGET_FLAGS="${WGET_FLAGS:- --verbose --tries=3 --limit-rate=10M}"
 TMP_DOWNLOAD_LOG="${TRUNK_TMPDIR}/download-$(
   set -e
@@ -377,6 +418,55 @@ download_cli() {
   rm -rf "${TMP_INSTALL_DIR}"
 }
 
+download_flaky_tests_latest_cli() {
+  readonly TMP_INSTALL_DIR="${LAUNCHER_TMPDIR}/install"
+  mkdir -p "${TMP_INSTALL_DIR}"
+
+  readonly URL="https://github.com/trunk-io/analytics-cli/releases/latest/download/trunk-analytics-cli-${PLATFORM}.tar.gz"
+  readonly DOWNLOAD_TAR_GZ="${TMP_INSTALL_DIR}/download-latest.tar.gz"
+
+  download_url "${URL}" "${DOWNLOAD_TAR_GZ}" "Downloading latest Trunk Flaky Tests CLI"
+
+  local unpacking_text="Unpacking Trunk Flaky Tests CLI..."
+  echo -e "${PROGRESS_MARKS[0]} ${unpacking_text}"
+  tar -C "${TMP_INSTALL_DIR}" -xf "${DOWNLOAD_TAR_GZ}"
+  echo -e "${CLEAR_LAST_MSG}${SUCCESS_MARK} ${unpacking_text} done"
+
+  rm -f "${DOWNLOAD_TAR_GZ}"
+  mkdir -p "${TOOL_DIR}"
+
+  mv "${TMP_INSTALL_DIR}/trunk-analytics-cli" "${TOOL_DIR}/" || true
+  rm -rf "${TMP_INSTALL_DIR}"
+
+  echo # add newline between launcher and CLI output
+}
+
+check_flaky_tests_cli_version() {
+  local flaky_tests_latest_file="${LAUNCHER_TMPDIR}/flaky-test-latest"
+  download_cmd "https://api.github.com/repos/trunk-io/analytics-cli/releases/latest" "${flaky_tests_latest_file}"
+  local download_pid="$!"
+
+  { sleep 3; kill "$download_pid"; } &
+  local timeout_pid="$!"
+
+  if ! wait "${download_pid}" 2>/dev/null; then
+    return 0
+  fi
+
+  kill "$timeout_pid"
+  wait "$timeout_pid" 2>/dev/null || true
+
+  local flaky_tests_latest_version=$(sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' "${flaky_tests_latest_file}")
+  local flaky_tests_installed_version=$(${TOOL_DIR}/trunk-analytics-cli --version | lawk '{print $NF}')
+
+  if [[ "$flaky_tests_installed_version" != "$flaky_tests_latest_version" ]]; then
+    echo -e "\033[1;33mWARNING\033[0m: You are not using the latest version of Trunk Flaky Tests CLI (current=$flaky_tests_installed_version, latest=$flaky_tests_latest_version)."
+    echo -e "The product is in constant development. To get the latest version, run: \033[1mtrunk flakytests --upgrade\033[0m\n"
+  fi
+
+  rm -f "${flaky_tests_latest_file}"
+}
+
 ###############################################################################
 #                                                                             #
 #   CLI resolution                                                            #
@@ -390,7 +480,7 @@ CONFIG_ABSPATH="$(
 readonly CONFIG_ABSPATH
 
 version="${TRUNK_CLI_VERSION:-}"
-if [[ -n ${version:-} ]]; then
+if [[ $TRUNK_FLAKY_TESTS_INVOCATION == true || -n ${version:-} ]]; then
   :
 elif [[ -f ${CONFIG_ABSPATH} ]]; then
   version="$(
@@ -414,12 +504,32 @@ else
   )
 fi
 
-readonly TOOL_PART="${version}-${PLATFORM}"
+TOOL_PART="${version}-${PLATFORM}"
+if [[ $TRUNK_FLAKY_TESTS_INVOCATION == true ]]; then
+  TOOL_PART=$PLATFORM
+fi
+readonly TOOL_PART
 readonly TOOL_DIR="${CLI_DIR}/${TOOL_PART}"
 
-if [[ ! -e ${TOOL_DIR}/trunk ]]; then
+if [[ $TRUNK_FLAKY_TESTS_INVOCATION == false && ! -e ${TOOL_DIR}/trunk ]]; then
   download_cli "${version}" "${version_sha256:-}"
   echo # add newline between launcher and CLI output
+elif [[ $TRUNK_FLAKY_TESTS_INVOCATION == true ]]; then
+  for arg in "$@"
+  do
+    shift
+    if [[ "$arg" = "--upgrade" ]]; then
+      download_flaky_tests_latest_cli
+    else
+      set -- "$@" "$arg"
+    fi
+  done
+
+  if [[ ! -e ${TOOL_DIR}/trunk-analytics-cli ]]; then
+    download_flaky_tests_latest_cli
+  fi
+
+  check_flaky_tests_cli_version
 fi
 
 if [[ ${TRUNK_LAUNCHER_QUIET} != false ]]; then
@@ -440,7 +550,14 @@ fi
 # Therefore, run cleanup manually here.
 cleanup 0
 
-exec \
-  env TRUNK_LAUNCHER_VERSION="${TRUNK_LAUNCHER_VERSION}" \
-  env TRUNK_LAUNCHER_PATH="${BASH_SOURCE[0]}" \
-  "${TOOL_DIR}/trunk" "$@"
+if [[ $TRUNK_FLAKY_TESTS_INVOCATION == true ]]; then
+  exec \
+    env TRUNK_LAUNCHER_VERSION="${TRUNK_LAUNCHER_VERSION}" \
+    env TRUNK_LAUNCHER_PATH="${BASH_SOURCE[0]}" \
+    "${TOOL_DIR}/trunk-analytics-cli" "${@:2}"
+else
+  exec \
+    env TRUNK_LAUNCHER_VERSION="${TRUNK_LAUNCHER_VERSION}" \
+    env TRUNK_LAUNCHER_PATH="${BASH_SOURCE[0]}" \
+    "${TOOL_DIR}/trunk" "$@"
+fi
