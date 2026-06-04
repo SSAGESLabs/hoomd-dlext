@@ -1,0 +1,63 @@
+name: Check HOOMD releases
+
+on:
+  schedule:
+    - cron: "0 12 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Check latest conda-forge HOOMD release
+        shell: python
+        run: |
+          import json
+          import re
+          import sys
+          import urllib.request
+          from pathlib import Path
+
+          def version_key(version):
+              match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", version)
+              if not match:
+                  raise ValueError(f"Unsupported version format: {version}")
+              return tuple(int(part) for part in match.groups())
+
+          workflow = Path(".github/workflows/ci.yml").read_text()
+          tested_versions = re.findall(r'hoomd:\s*"([0-9]+\.[0-9]+\.[0-9]+)"', workflow)
+          if not tested_versions:
+              sys.exit("No HOOMD versions found in .github/workflows/ci.yml")
+
+          latest_tested = max(tested_versions, key=version_key)
+
+          url = "https://conda.anaconda.org/conda-forge/linux-64/repodata.json"
+          with urllib.request.urlopen(url, timeout=60) as response:
+              repodata = json.load(response)
+
+          available_versions = {
+              package["version"]
+              for section in ("packages", "packages.conda")
+              for package in repodata.get(section, {}).values()
+              if package.get("name") == "hoomd"
+              and re.fullmatch(r"\d+\.\d+\.\d+", package.get("version", ""))
+          }
+          if not available_versions:
+              sys.exit("No HOOMD packages found in conda-forge linux-64 repodata")
+
+          latest_available = max(available_versions, key=version_key)
+
+          print(f"Latest HOOMD in CI matrix: {latest_tested}")
+          print(f"Latest HOOMD on conda-forge: {latest_available}")
+
+          if version_key(latest_available) > version_key(latest_tested):
+              sys.exit(
+                  "A newer HOOMD release is available on conda-forge. "
+                  "Update the latest matrix entry or add a new coverage entry."
+              )
