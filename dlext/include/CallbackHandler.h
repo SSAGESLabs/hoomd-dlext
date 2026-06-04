@@ -36,14 +36,14 @@ public:
     //!     callback(positions, velocities, rtags, images, forces, n)
     //! where `n` ìs an additional `TimeStep` parameter.
     //!
-    //! The data for the particles information is requested at the given `location`
-    //! and access `mode`. NOTE: Forces are always passed in readwrite mode.
+    //! Particle data is requested at the given `location` and access `mode`.
+    //! `forces` are always readwrite, and `rtags` are always read-only.
     template <typename Callback>
     void forward_data(Callback callback, AccessLocation location, AccessMode mode, TimeStep n)
     {
         auto pos_capsule = Wrapper<PositionsTypes>::wrap(_sysview, location, mode);
         auto vel_capsule = Wrapper<VelocitiesMasses>::wrap(_sysview, location, mode);
-        auto rtags_capsule = Wrapper<RTags>::wrap(_sysview, location, mode);
+        auto rtags_capsule = Wrapper<RTags>::wrap(_sysview, location, kRead);
         auto img_capsule = Wrapper<Images>::wrap(_sysview, location, mode);
         auto force_capsule = Wrapper<NetForces>::wrap(_sysview, location, kReadWrite);
 
