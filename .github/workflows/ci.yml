@@ -34,8 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 3.11.0 and 4.9.1 (final 3.x / 4.x) cover the GlobalArray path; 5.0.0
-        # is the GlobalArray -> GPUArray boundary; 7.0.1 is current.
+        # 3.11.0 and 4.9.1 (final 3.x / 4.x) cover the GlobalArray path.
         include:
           - hoomd: "3.11.0"
             cxx_compiler: "cxx-compiler=1.5.2"
@@ -45,9 +44,8 @@ jobs:
             cxx_compiler: "cxx-compiler=1.8.0"
             pybind11: "pybind11<3"
             eigen: "eigen<5"
-          - hoomd: "5.0.0"
+          - hoomd: "5.4.0"
             cxx_compiler: "cxx-compiler=1.8.0"
-            pybind11: "pybind11<3"
             eigen: "eigen<5"
           - hoomd: "6.1.1"
             eigen: "eigen<5"
