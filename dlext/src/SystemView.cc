@@ -22,7 +22,6 @@ unsigned int SystemView::global_particle_number() const { return _pdata->getNGlo
 
 int SystemView::get_device_id(bool gpu_flag) const
 {
-    maybe_unused(gpu_flag);  // prevent compiler warnings when ENABLE_CUDA is not defined
 #ifdef ENABLE_CUDA
     if (gpu_flag) {
 #ifdef HOOMD5
@@ -31,8 +30,10 @@ int SystemView::get_device_id(bool gpu_flag) const
         return _exec_conf->getGPUIds()[0];
 #endif
     }
+#else
+    maybe_unused(gpu_flag);
 #endif
-    return _exec_conf->getRank();
+    return 0;
 }
 
 void SystemView::synchronize()
