@@ -27,10 +27,7 @@ template <typename T>
 using ArrayHandleUPtr = std::unique_ptr<ArrayHandle<T>>;
 
 template <template <typename> class Array, typename T, typename Object>
-using ArrayPropertyGetter = const Array<T>& (Object::*)() const;
-
-template <typename T>
-using PropertyGetter = T (*)(const SystemView&, AccessLocation, AccessMode);
+using PropertyGetter = const Array<T>& (Object::*)() const;
 
 // } // Aliases
 
@@ -119,7 +116,7 @@ constexpr int64_t stride1<unsigned int>() { return 1; }
 
 template <template <typename> class A, typename T, typename O>
 DLManagedTensor* wrap(
-    const SystemView& sysview, ArrayPropertyGetter<A, T, O> getter,
+    const SystemView& sysview, PropertyGetter<A, T, O> getter,
     AccessLocation requested_location, AccessMode mode,
     int64_t size2 = 1, uint64_t offset = 0, uint64_t stride1_offset = 0
 )
