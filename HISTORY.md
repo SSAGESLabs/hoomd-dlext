@@ -1,5 +1,10 @@
 # hoomd-dlext Release Notes
 
+## v0.7.0
+
+- Return Python DLPack protocol objects from property getters and sampler callbacks.
+- Report the standard DLPack device ID `0` for CPU tensors, including in MPI simulations.
+
 ## v0.6.0
 
 - Add support for HOOMD-blue 5, 6, and 7.
