@@ -47,12 +47,16 @@ void export_SystemView(py::module& m)
         .def("synchronize", &SystemView::synchronize)
         .def("__enter__", [](SystemView& self) { self.enter(); return self; })
         .def("__exit__", [](SystemView& self, PyObject, PyObject, PyObject) {
-            while (kPyCapsulesPool.size() > 0) {
-                invalidate(kPyCapsulesPool.back());
-                kPyCapsulesPool.pop_back();
-            }
+            kTensorPool.clear();
             self.exit();
         });
+}
+
+void export_DLPackTensor(py::module& m)
+{
+    py::class_<PyDLPackTensor>(m, "DLPackTensor")
+        .def("__dlpack__", &PyDLPackTensor::dlpack, py::arg("stream") = py::none())
+        .def("__dlpack_device__", &PyDLPackTensor::device);
 }
 
 PYBIND11_MODULE(_api, m)
@@ -78,6 +82,7 @@ PYBIND11_MODULE(_api, m)
 
     // Classes
     export_CallbackHandler(m);
+    export_DLPackTensor(m);
     export_HalfStepHook(m);
     export_SystemView(m);
 

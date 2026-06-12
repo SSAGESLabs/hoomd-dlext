@@ -23,13 +23,13 @@ from hoomd.dlext import (  # noqa: E402
     SystemView,
 )
 
-from helpers import (
+from helpers import (  # noqa: E402
     LOC,
     N,
     generate_simulation,
     read_tensor,
     writable_tensor,
-)  # noqa: E402
+)
 
 
 def _tags(view):

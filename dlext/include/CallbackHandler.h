@@ -41,13 +41,13 @@ public:
     template <typename Callback>
     void forward_data(Callback callback, AccessLocation location, AccessMode mode, TimeStep n)
     {
-        auto pos_capsule = Wrapper<PositionsTypes>::wrap(_sysview, location, mode);
-        auto vel_capsule = Wrapper<VelocitiesMasses>::wrap(_sysview, location, mode);
-        auto rtags_capsule = Wrapper<RTags>::wrap(_sysview, location, kRead);
-        auto img_capsule = Wrapper<Images>::wrap(_sysview, location, mode);
-        auto force_capsule = Wrapper<NetForces>::wrap(_sysview, location, kReadWrite);
+        auto positions = Wrapper<PositionsTypes>::wrap(_sysview, location, mode);
+        auto velocities = Wrapper<VelocitiesMasses>::wrap(_sysview, location, mode);
+        auto rtags = Wrapper<RTags>::wrap(_sysview, location, kRead);
+        auto images = Wrapper<Images>::wrap(_sysview, location, mode);
+        auto forces = Wrapper<NetForces>::wrap(_sysview, location, kReadWrite);
 
-        callback(pos_capsule, vel_capsule, rtags_capsule, img_capsule, force_capsule, n);
+        callback(positions, velocities, rtags, images, forces, n);
     }
 
 private:

@@ -92,6 +92,10 @@ jobs:
         shell: bash -el {0}
         run: pytest tests/test_interop.py -v
 
+      - name: Run DLPack protocol tests
+        shell: bash -el {0}
+        run: pytest tests/test_dlpack_tensor.py -v
+
       - name: Run restart regression tests
         shell: bash -el {0}
         run: pytest tests/test_restart.py -v

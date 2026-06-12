@@ -9,6 +9,7 @@ from ._api import (  # noqa: F401 # pylint: disable=E0401
     AccessLocation,
     AccessMode,
     # Classes
+    DLPackTensor,
     SystemView,
     # Methods
     angular_momenta,
@@ -57,4 +58,6 @@ class DLExtSampler(_api.HalfStepHook):  # noqa: F821
         callback_handle = _api.CallbackHandler(sysview)  # noqa: F821
 
         self.forward_data = callback_handle.forward_data
-        self.update = partial(self.forward_data, update_callback, update_location, update_mode)
+        self.update = partial(
+            self.forward_data, update_callback, update_location, update_mode
+        )

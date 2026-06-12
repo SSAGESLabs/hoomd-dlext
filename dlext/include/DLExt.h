@@ -7,6 +7,7 @@
 #include "SystemView.h"
 #include "dlpack/dlpack.h"
 
+#include <memory>
 #include <type_traits>
 #include <vector>
 
@@ -22,6 +23,7 @@ namespace cxx11 = cxx11utils;
 // { // Aliases
 
 using DLManagedTensorDeleter = void (*)(DLManagedTensor*);
+using DLManagedTensorUPtr = std::unique_ptr<DLManagedTensor, DLManagedTensorDeleter>;
 
 template <typename T>
 using ArrayHandleUPtr = std::unique_ptr<ArrayHandle<T>>;
@@ -115,7 +117,7 @@ template <>
 constexpr int64_t stride1<unsigned int>() { return 1; }
 
 template <template <typename> class A, typename T, typename O>
-DLManagedTensor* wrap(
+DLManagedTensorUPtr wrap(
     const SystemView& sysview, PropertyGetter<A, T, O> getter,
     AccessLocation requested_location, AccessMode mode,
     int64_t size2 = 1, uint64_t offset = 0, uint64_t stride1_offset = 0
@@ -152,12 +154,12 @@ DLManagedTensor* wrap(
     dltensor.strides = reinterpret_cast<std::int64_t*>(strides.data());
     dltensor.byte_offset = offset;
 
-    return &(bridge.release()->tensor);
+    return DLManagedTensorUPtr(&(bridge.release()->tensor), delete_bridge<T>);
 }
 
 #define DLEXT_PROPERTY_WRAPPER(PROPERTY, GETTER, SIZE1)                                      \
     struct PROPERTY final {                                                                  \
-        static DLManagedTensor* from(                                                        \
+        static DLManagedTensorUPtr from(                                                     \
             const SystemView& sysview, AccessLocation location, AccessMode mode = kReadWrite \
         )                                                                                    \
         {                                                                                    \
